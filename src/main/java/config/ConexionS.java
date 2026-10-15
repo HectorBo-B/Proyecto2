@@ -16,4 +16,9 @@ public class ConexionS {
 	
 	private Connection connection;
 	
+	public static Connection getConexion() throws SQLException{
+		
+		return DriverManager.getConnection(url, user, password);
+	}
+	
 }
