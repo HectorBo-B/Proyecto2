@@ -51,7 +51,7 @@
                 
                 	<div class = "modal-content">
 	                	<span class ="close">&times;</span>
-	                	<form action = "empServlet" method = "post">
+	                	<form action = "${pageContext.request.contextPath}/empServlet" method = "post">
 	                	
 	                	<input id = "idEMP" type ="number" placeholder="ID" name = "idEMP">
 	                	<input id = "nombre" type ="text" placeholder="Martín" name = "nombre">
