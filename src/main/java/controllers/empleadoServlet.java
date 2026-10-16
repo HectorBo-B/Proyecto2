@@ -1,19 +1,58 @@
 package controllers;
 
 import java.io.IOException;
+import java.sql.Date;
 
+import dao.empleadoDAO;
 import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
-public class empleadoServlet {
+import model.empleado;
+import dao.empleadoDAO;
+
+@WebServlet("/empServlet")
+public class empleadoServlet extends HttpServlet{
 
 	//Inicializa el servlet
 	public void init()throws ServletException{
+		System.out.println("Server inicializado");
+	}	
+	
+	public void doPost(HttpServletRequest rq, HttpServletResponse rsp) throws ServletException, IOException{
 		
-	}
-	
-	
-	//Realiza las operaciones
-	public void service(ServletRequest rq, ServletResponse rs) throws ServletException, IOException {
+		System.out.println("Llegó una petición");
+		
+		rq.setCharacterEncoding("UTF-8");
+		try {
+			
+			String id = rq.getParameter("idEMP");
+			int ID = Integer.parseInt(id);
+			
+			String nombre = rq.getParameter("nombre");
+			String apellido = rq.getParameter("apellido");
+			String cedula = rq.getParameter("cedula");
+			String cod_marcacion = rq.getParameter("codMarc");
+			int cod_Marc = Integer.parseInt(cod_marcacion);
+			
+			String turno = rq.getParameter("turno");
+			String estado = rq.getParameter("estado");
+			int est = Integer.parseInt(estado);
+			
+			String fecha = rq.getParameter("fecha");
+			
+			empleado empleado = new empleado(ID, nombre, apellido, cedula, cod_Marc, turno, est, fecha);
+			empleadoDAO empleadoDAO = new empleadoDAO();
+			empleadoDAO.crearEmpleado(empleado);
+			
+			rsp.getWriter().println("Se ha completado la operación");
+			
+		} catch (NumberFormatException | NullPointerException e) {
+			rsp.getWriter().println("<h1>Error: revisa los campos numéricos</h1>");
+		}
+		
 		
 	}
 	
@@ -21,7 +60,5 @@ public class empleadoServlet {
 		
 	}
 	
-	public void doPost() {
-		
-	}
+	
 }

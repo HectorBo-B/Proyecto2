@@ -29,6 +29,15 @@ public class empleadoDAO {
 				while (rs.next()) {
 					
 					prepST.setInt(1, emp.getEmpleadoID());
+					prepST.setString(2, emp.getCedula());
+					prepST.setString(3, emp.getNombre());
+					prepST.setString(4, emp.getApellido());
+					prepST.setInt(5, emp.getCodM());
+					prepST.setString(6, emp.getTurno());
+					prepST.setDate(7, emp.getFechaReg());
+					prepST.setString(8, emp.getCedula());
+					
+					System.out.println("Operación exitosa supongo?");
 				}
 			
 			

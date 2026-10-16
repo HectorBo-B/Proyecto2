@@ -42,7 +42,7 @@
                 </div>
                 
                 <!-- Botón para añadir un empleado (Abre un modal) -->
-                <button id = "btnEmp" type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                <button id = "btnEmp" type="button" class="btn btn-primary">
                     <i class="fa-solid fa-plus"></i> Nuevo empleado
                 </button>
                 
@@ -51,16 +51,16 @@
                 
                 	<div class = "modal-content">
 	                	<span class ="close">&times;</span>
-	                	<form>
+	                	<form action = "empServlet" method = "post">
 	                	
-	                	<input id = "idEMP" type ="number" placeholder="ID">
-	                	<input id = "nombre" type ="text" placeholder="Martín">
-	                	<input id = "apellido" type ="text" placeholder="Alexis">
-	                	<input id = "cedula" type ="text" placeholder="8-4512-533">
-	                	<input id = "codMarc" type ="number" placeholder="555">
-	                	<input id = "turno" type ="text" placeholder="T o M">
-	                	<input id = "estado" type ="number" placeholder="1 o 0">	                	
-	                	<input id = "fecha" type ="date">
+	                	<input id = "idEMP" type ="number" placeholder="ID" name = "idEMP">
+	                	<input id = "nombre" type ="text" placeholder="Martín" name = "nombre">
+	                	<input id = "apellido" type ="text" placeholder="Alexis" name = "apellido">
+	                	<input id = "cedula" type ="text" placeholder="8-4512-533" name = "cedula">
+	                	<input id = "codMarc" type ="number" placeholder="555" name = "codMarc">
+	                	<input id = "turno" type ="text" placeholder="T o M" name = "turno">
+	                	<input id = "estado" type ="number" placeholder="1 o 0" name = "estado">	                	
+	                	<input id = "fecha" type ="date" name = "fecha">
 	                	
 	                	<input type = "submit" class = "btn-submit">
 	                	</form>

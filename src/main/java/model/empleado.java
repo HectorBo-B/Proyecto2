@@ -1,5 +1,7 @@
 package model;
 
+import java.sql.Date;
+
 public class empleado {
 
 	private int id_empleado;
@@ -9,7 +11,11 @@ public class empleado {
 	private int cod_marcacion;
 	private String turno;
 	private int estado;
-	private String fecha_registro;
+	private Date fecha_registro;
+	
+	public empleado() {
+		
+	}
 	
 	public empleado(int id_empleado, String cedula, String nombre, String apellido, 
 					int cod_marcacion, String turno, int estado, String fecha_registro) {}
@@ -61,8 +67,8 @@ public class empleado {
 		this.estado = estado;
 	}
 	
-	public String getFechaReg() {return fecha_registro;}
-	public void setFechaReg(String fechaRegistro) {
+	public Date getFechaReg() {return fecha_registro;}
+	public void setFechaReg(Date fechaRegistro) {
 		this.fecha_registro = fechaRegistro;
 	}
 }
