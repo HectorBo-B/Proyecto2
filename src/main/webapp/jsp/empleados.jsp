@@ -15,7 +15,7 @@
 	z-index: 1;  /*Sit on top*/ 
 	left: 40%;
 	top: 30%;
-	width: 30%;
+	width: 20%;
 	overflow: auto; 
 	background-color: rgba(240,240,240,1); /* Black w/ opacity */
 	border: solid 1px grey;
@@ -23,6 +23,7 @@
     
     .modal-content{
     padding: 4px;
+    left: 50%;
     }
     
     
@@ -52,11 +53,16 @@
 	                	<span class ="close">&times;</span>
 	                	<form>
 	                	
-	                	<input type ="text" placeholder="ID">
-	                	<input type ="text" placeholder="Martín">
-	                	<input type ="text" placeholder="Alexis">
-	                	<input type ="text" placeholder="8-4512-533">
+	                	<input id = "idEMP" type ="number" placeholder="ID">
+	                	<input id = "nombre" type ="text" placeholder="Martín">
+	                	<input id = "apellido" type ="text" placeholder="Alexis">
+	                	<input id = "cedula" type ="text" placeholder="8-4512-533">
+	                	<input id = "codMarc" type ="number" placeholder="555">
+	                	<input id = "turno" type ="text" placeholder="T o M">
+	                	<input id = "estado" type ="number" placeholder="1 o 0">	                	
+	                	<input id = "fecha" type ="date">
 	                	
+	                	<input type = "submit" class = "btn-submit">
 	                	</form>
                 	</div>
                 </div>
