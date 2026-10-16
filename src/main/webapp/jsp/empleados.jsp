@@ -18,9 +18,23 @@
                     <h1>Personal</h1>
                     <p>Listado de empleados registrados</p>
                 </div>
-                <button type="button" class="btn btn-primary">
+                
+                <!-- Botón para añadir un empleado (Abre un modal) -->
+                <button id = "btnEmp" type="button" class="btn btn-primary">
                     <i class="fa-solid fa-plus"></i> Nuevo empleado
                 </button>
+                
+                <!-- Modal de crear empleado -->
+                <div id = "modNewEmp" class = "modal">
+                
+                	<!-- Contenido -->
+                	<div class = "modal-content">
+                		<span class = "close">&times</span>
+                		<p>Info de empleado va aquí</p>
+                	</div>
+                </div>
+                <!-- Fin del modal -->
+                
             </div>
 
             <div class="card">
@@ -81,5 +95,28 @@
             </div>
         </main>
     </div>
+    
+    <script>
+    
+    var modal = document.getElementById("modNewEmp");
+	var btn = document.getElementById("btnEmp");
+	var span = document.getElementsByClassName("close")[0];
+	
+	btn.onClick = function(){
+		modal.style.display = "block";
+	}
+	
+	span.onclick = function() {
+		  modal.style.display = "none";
+		}
+    
+    //Abre un modal para "crear" empleados
+    function abrirModal(){
+    	
+        //Elementos para el modal de crear empleados
+        
+    }
+    </script>
+    
 </body>
 </html>
