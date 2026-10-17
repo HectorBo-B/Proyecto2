@@ -2,7 +2,6 @@ package dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 
 
 
@@ -14,9 +13,9 @@ public class empleadoDAO {
 	//Inserta a un empleado en la base de datos (en progreso)
 	public boolean crearEmpleado(empleado emp) {
 		
-		String sql = "Insert Into personal "
-				+ "ID_PERSONAL, CEDULA, NOMBRE, APELLIDO, "
-				+ "CODIGO_MARCACION, TURNO, ESTADO, FECHA_REGISTRO "
+		String sql = "Insert into personal "
+				+ "(ID_PERSONAL, CEDULA, NOMBRE, APELLIDO, "
+				+ "CODIGO_MARCACION, TURNO, ESTADO, FECHA_REGISTRO) "
 				+ "values(?, ?, ?, ?, ?, ?, ?, ?)";
 		
 		try{
@@ -25,7 +24,10 @@ public class empleadoDAO {
 			PreparedStatement prepST = con.prepareStatement(sql);
 					
 					prepST.setInt(1, emp.getEmpleadoID());
+					
 					prepST.setString(2, emp.getCedula());
+					System.out.println("Cédula en el objeto: " + emp.getCedula());
+					
 					prepST.setString(3, emp.getNombre());
 					prepST.setString(4, emp.getApellido());
 					prepST.setInt(5, emp.getCodM());

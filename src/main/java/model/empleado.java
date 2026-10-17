@@ -18,22 +18,27 @@ public class empleado {
 	}
 	
 	public empleado(int id_empleado, String cedula, String nombre, String apellido, 
-					int cod_marcacion, String turno, int estado, String fecha_registro) {}
+					int cod_marcacion, String turno, int estado, String fecha_registro) {
+	    this.id_empleado = id_empleado;
+	    this.cedula = cedula;
+	    this.nombre = nombre;
+	    this.apellido = apellido;
+	    this.cod_marcacion = cod_marcacion;
+	    this.turno = turno;
+	    this.estado = estado;
+	    this.fecha_registro = Date.valueOf(fecha_registro);
+	}
 	
 	
 	//ID Empleado
-	
-	//Devuelve el ID del empleado
+
 	public int getEmpleadoID() {return id_empleado;}
-	
-	//Crea el ID del empleado
 	public void setEmpleadoID(int id_empleado){
 		this.id_empleado = id_empleado;
 	}
 	
 	//Cedula Empleado
 	public String getCedula() {return cedula;}
-	
 	public void setCedula(String cedula) {
 		this.cedula = cedula;
 	}

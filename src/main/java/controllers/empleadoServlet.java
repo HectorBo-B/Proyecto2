@@ -35,6 +35,8 @@ public class empleadoServlet extends HttpServlet{
 			String nombre = rq.getParameter("nombre");
 			String apellido = rq.getParameter("apellido");
 			String cedula = rq.getParameter("cedula");
+			//System.out.println("Cédula recibida del formulario: " + cedula);
+			
 			String cod_marcacion = rq.getParameter("codMarc");
 			int cod_Marc = Integer.parseInt(cod_marcacion);
 			
@@ -44,11 +46,12 @@ public class empleadoServlet extends HttpServlet{
 			
 			String fecha = rq.getParameter("fecha");
 			
-			empleado empleado = new empleado(ID, nombre, apellido, cedula, cod_Marc, turno, est, fecha);
+			empleado emp = new empleado(ID, cedula, nombre, apellido, cod_Marc, turno, est, fecha);
 			empleadoDAO empleadoDAO = new empleadoDAO();
 			
+			
 			//Chequeo de si la operación ha funcionado o no
-			boolean ok = empleadoDAO.crearEmpleado(empleado);
+			boolean ok = empleadoDAO.crearEmpleado(emp);
 			if (ok) {
 			    rsp.getWriter().println("Se ha completado la operación");
 			} else {
