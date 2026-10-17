@@ -54,12 +54,14 @@ public class empleadoServlet extends HttpServlet{
 			boolean ok = empleadoDAO.crearEmpleado(emp);
 			if (ok) {
 			    rsp.getWriter().println("Se ha completado la operación");
+			    rsp.sendRedirect(rq.getContextPath() + "/jsp/empleados.jsp");
 			} else {
 			    rsp.getWriter().println("No se pudo guardar. Revisa la consola.");
 			}
 			
 		} catch (NumberFormatException | NullPointerException e) {
 			rsp.getWriter().println("<h1>Error: revisa los campos numéricos</h1>");
+			rsp.sendRedirect(rq.getContextPath() + "/jsp/empleados.jsp");
 		}
 		
 		
