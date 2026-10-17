@@ -26,6 +26,7 @@ public class empleadoServlet extends HttpServlet{
 		System.out.println("Llegó una petición");
 		
 		rq.setCharacterEncoding("UTF-8");
+		rsp.setContentType("text/html;charset=UTF-8");
 		try {
 			
 			String id = rq.getParameter("idEMP");
@@ -45,9 +46,14 @@ public class empleadoServlet extends HttpServlet{
 			
 			empleado empleado = new empleado(ID, nombre, apellido, cedula, cod_Marc, turno, est, fecha);
 			empleadoDAO empleadoDAO = new empleadoDAO();
-			empleadoDAO.crearEmpleado(empleado);
 			
-			rsp.getWriter().println("Se ha completado la operación");
+			//Chequeo de si la operación ha funcionado o no
+			boolean ok = empleadoDAO.crearEmpleado(empleado);
+			if (ok) {
+			    rsp.getWriter().println("Se ha completado la operación");
+			} else {
+			    rsp.getWriter().println("No se pudo guardar. Revisa la consola.");
+			}
 			
 		} catch (NumberFormatException | NullPointerException e) {
 			rsp.getWriter().println("<h1>Error: revisa los campos numéricos</h1>");
