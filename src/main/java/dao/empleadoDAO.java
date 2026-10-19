@@ -2,7 +2,9 @@ package dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-
+import java.util.List; 
+import java.util.ArrayList;
+import java.sql.ResultSet;
 
 
 import config.Conexion;
@@ -46,5 +48,31 @@ public class empleadoDAO {
 		}
 	}
 	
-	
+	//Busca y devuelve los datos de todos los empleados, se utiliza para la lista que aparece en la pestaña de "empleados"
+	public List<empleado> buscarEmpleados() {
+		
+		List<empleado> lista = new ArrayList<>();
+		
+		String sql = "select (CODIGO_MARCACION, NOMBRE, ESTADO) from personal"; 
+		
+		try {
+			Connection con = Conexion.getConexion();
+			PreparedStatement prepST = con.prepareStatement(sql);
+			ResultSet rs = prepST.executeQuery();
+			
+			while (rs.next()) {
+				empleado emp = new empleado();
+				
+				emp.setCodM(rs.getInt("CODIGO_MARCACION"));
+				emp.setNombre(rs.getString("NOMBRE"));
+			}
+			
+			
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return lista;
+	}
 }

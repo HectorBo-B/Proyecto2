@@ -67,7 +67,15 @@ public class empleadoServlet extends HttpServlet{
 		
 	}
 	
-	public void doGet() {
+	public void doGet(HttpServletRequest rq, HttpServletResponse rsp) throws ServletException, IOException{
+		
+		System.out.println("Empezando proceso");
+		
+		rq.setCharacterEncoding("UTF-8");
+		rsp.setContentType("text/html;charset=UTF-8");
+		
+		empleado emp = new empleado();
+		empleadoDAO empleadoDAO = new empleadoDAO();
 		
 	}
 	
