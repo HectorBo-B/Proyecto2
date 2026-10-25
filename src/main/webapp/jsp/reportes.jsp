@@ -87,7 +87,9 @@
                         <table class="table" id="tblReportes">
                             <thead>
                                 <tr>
+                                		<th>Cédula</th>
                                     <th>Nombre</th>
+                                    <th>Código de marcación</th>
                                     <th>Turno</th>
                                     <th>Estado</th>
                                     <th class="actions">Acciones</th>
@@ -101,7 +103,9 @@
                                             + " " + sinTildes(e.getApellido() + " " + e.getNombre());
                                 %>
                                 <tr>
+                                	<td><%= resultadoImportacion.escapar(e.getCedula()) %></td>
                                     <td><strong><%= resultadoImportacion.escapar(nombreCompleto) %></strong><span hidden><%= resultadoImportacion.escapar(claveBusqueda) %></span></td>
+									<td><%= e.getCodM() %></td>
                                     <td><%= e.getTurnoNombre() %></td>
                                     <td><span class="badge <%= activo ? "badge-ok" : "badge-off" %>"><%= activo ? "Activo" : "Inactivo" %></span></td>
                                     <td class="actions">
