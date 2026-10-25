@@ -1,4 +1,25 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List, model.empleado, model.empleado.codigoMarcacion, model.resultadoImportacion" %>
+<%
+    @SuppressWarnings("unchecked")
+    List<empleado> empleados = (List<empleado>) request.getAttribute("empleados");
+
+    //si se abre el JSP directamente, se pasa primero por el servlet para cargar los datos
+    if (empleados == null)
+    {
+        response.sendRedirect(request.getContextPath() + "/empServlet");
+        return;
+    }
+
+    @SuppressWarnings("unchecked")
+    List<codigoMarcacion> codigos = (List<codigoMarcacion>) request.getAttribute("codigos");
+
+    String error = (String) request.getAttribute("error");
+    String mensajeOk = (String) session.getAttribute("mensajeEmpleadoOk");
+    String mensajeError = (String) session.getAttribute("mensajeEmpleadoError");
+    session.removeAttribute("mensajeEmpleadoOk");
+    session.removeAttribute("mensajeEmpleadoError");
+%>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,154 +28,181 @@
     <title>Personal - Asistencia</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    
-    <style>
-    .modal{
-    display: none;
-	position: fixed; /* Stay in place */
-	z-index: 1;  /*Sit on top*/ 
-	left: 40%;
-	top: 30%;
-	width: 20%;
-	overflow: auto; 
-	background-color: rgba(240,240,240,1); /* Black w/ opacity */
-	border: solid 1px grey;
-    }
-    
-    .modal-content{
-    padding: 4px;
-    left: 50%;
-    }
-    
-    
-    </style>
-    
+    <script src="${pageContext.request.contextPath}/js/funciones.js" defer></script>
 </head>
 <body>
     <div class="app">
         <jsp:include page="/includes/sidebar.jsp" />
 
-        <main class="main">
-            <div class="page-header">
-                <div>
-                    <h1>Personal</h1>
-                    <p>Listado de empleados registrados</p>
-                </div>
-                
-                <!-- Botón para añadir un empleado (Abre un modal) -->
-                <button id = "btnEmp" type="button" class="btn btn-primary">
-                    <i class="fa-solid fa-plus"></i> Nuevo empleado
+        <div class="content">
+            <header class="topbar">
+                <button type="button" class="menu-btn" data-menu aria-label="Mostrar u ocultar el menú" title="Mostrar u ocultar el menú">
+                    <i class="fa-solid fa-bars"></i>
                 </button>
-                
-                <!-- Modal de crear empleado -->
-                <div id = "modNewEmp" class = "modal">
-                
-                	<div class = "modal-content">
-	                	<span class ="close">&times;</span>
-	                	<form action = "${pageContext.request.contextPath}/empServlet" method = "post">
-	                	
-	                	<input id = "idEMP" type ="number" placeholder="ID" name = "idEMP">
-	                	<input id = "nombre" type ="text" placeholder="Martín" name = "nombre">
-	                	<input id = "apellido" type ="text" placeholder="Alexis" name = "apellido">
-	                	<input id = "cedula" type ="text" placeholder="8-4512-533" name = "cedula">
-	                	<input id = "codMarc" type ="number" placeholder="555" name = "codMarc">
-	                	<input id = "turno" type ="text" placeholder="T o M" name = "turno">
-	                	<input id = "estado" type ="number" placeholder="1 o 0" name = "estado">	                	
-	                	<input id = "fecha" type ="date" name = "fecha">
-	                	
-	                	<input type = "submit" class = "btn-submit">
-	                	</form>
-                	</div>
-                </div>
-                <!-- Fin del modal -->
-                
-            </div>
+                <strong class="topbar-title">Personal</strong>
+            </header>
 
-            <div class="card">
-                <div class="toolbar">
-                    <div class="field">
-                        <label for="buscar">Buscar</label>
-                        <input type="text" id="buscar" class="input" placeholder="Nombre o código...">
+            <main class="main">
+                <div class="page-header">
+                    <div>
+                        <h1>Personal</h1>
+                        <p>Empleados y sus códigos de marcación del reloj</p>
                     </div>
-                    <div class="field">
-                        <label for="departamento">Departamento</label>
-                        <select id="departamento" class="input">
-                            <option value="">Todos</option>
-                        </select>
-                    </div>
-                    <button type="button" class="btn btn-secondary">
-                        <i class="fa-solid fa-rotate"></i> Limpiar
+                    <button type="button" class="btn btn-primary" data-abrir="dlgPersonal" data-titulo="Nuevo empleado">
+                        <i class="fa-solid fa-plus"></i> Nuevo empleado
                     </button>
                 </div>
 
-                <div class="table-wrap">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Código</th>
-                                <th>Nombre</th>
-                                <th>Departamento</th>
-                                <th>Cargo</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>0001</td>
-                                <td>Nombre del empleado</td>
-                                <td>Departamento</td>
-                                <td>Cargo</td>
-                                <td><span class="badge badge-ok">Activo</span></td>
-                                <td>
-                                    <button type="button" class="btn-icon" title="Editar"><i class="fa-solid fa-pen"></i></button>
-                                    <button type="button" class="btn-icon" title="Desactivar"><i class="fa-solid fa-trash-can"></i></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>0002</td>
-                                <td>Nombre del empleado</td>
-                                <td>Departamento</td>
-                                <td>Cargo</td>
-                                <td><span class="badge badge-off">Inactivo</span></td>
-                                <td>
-                                    <button type="button" class="btn-icon" title="Editar"><i class="fa-solid fa-pen"></i></button>
-                                    <button type="button" class="btn-icon" title="Activar"><i class="fa-solid fa-trash-can"></i></button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <% if (error != null) { %>
+                <div class="alert alert-error">
+                    <i class="fa-solid fa-circle-exclamation"></i> <%= resultadoImportacion.escapar(error) %>
+                </div>
+                <% } %>
+                <% if (mensajeError != null) { %>
+                <div class="alert alert-error">
+                    <i class="fa-solid fa-circle-exclamation"></i> <%= resultadoImportacion.escapar(mensajeError) %>
+                </div>
+                <% } %>
+                <% if (mensajeOk != null) { %>
+                <div class="alert alert-ok">
+                    <i class="fa-solid fa-circle-check"></i> <%= resultadoImportacion.escapar(mensajeOk) %>
+                </div>
+                <% } %>
+
+                <div class="card">
+                    <div class="card-head">
+                        <h3>Listado de personal</h3>
+                    </div>
+
+                    <div class="toolbar">
+                        <div class="field">
+                            <label for="buscar">Buscar</label>
+                            <input type="text" id="buscar" class="input" placeholder="Cédula, nombre o código de marcación..." data-buscar="tblPersonal">
+                        </div>
+                        <div class="field">
+                            <label for="filtroTurno">Turno</label>
+                            <select id="filtroTurno" class="input" data-filtro-select="tblPersonal" data-campo="turno">
+                                <option value="">Todos</option>
+                                <option value="M">Mañana</option>
+                                <option value="T">Tarde</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="filtroEstado">Estado</label>
+                            <select id="filtroEstado" class="input" data-filtro-select="tblPersonal" data-campo="estado">
+                                <option value="">Todos</option>
+                                <option value="1">Activos</option>
+                                <option value="0">Inactivos</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-secondary" data-limpiar="tblPersonal">
+                            <i class="fa-solid fa-rotate"></i> Limpiar
+                        </button>
+                        <span class="counter" data-contador="tblPersonal"><%= empleados.size() %> resultado(s)</span>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table class="table" id="tblPersonal"
+                               data-crud="dlgPersonal" data-titulo-editar="Modificar empleado" data-etiqueta="nombre apellido"
+                               data-servidor="${pageContext.request.contextPath}/empServlet"
+                               data-mapa-turno="M|Mañana;T|Tarde"
+                               data-badge-estado="1|badge-ok|Activo;0|badge-off|Inactivo">
+                            <thead>
+                                <tr>
+                                    <th>Cédula</th>
+                                    <th>Nombre</th>
+                                    <th>Código de marcación</th>
+                                    <th>Turno</th>
+                                    <th>Estado</th>
+                                    <th>Fecha de registro</th>
+                                    <th class="actions">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% for (empleado e : empleados) { boolean activo = e.getEstado() == 1; %>
+                                <tr data-idemp="<%= e.getEmpleadoID() %>" data-nombre="<%= resultadoImportacion.escapar(e.getNombre()) %>" data-apellido="<%= resultadoImportacion.escapar(e.getApellido()) %>" data-cedula="<%= resultadoImportacion.escapar(e.getCedula()) %>" data-codmarc="<%= e.getCodM() %>" data-turno="<%= resultadoImportacion.escapar(e.getTurno()) %>" data-estado="<%= e.getEstado() %>" data-fecha="<%= e.getFechaRegTexto() %>">
+                                    <td data-col="cedula"><%= resultadoImportacion.escapar(e.getCedula()) %></td>
+                                    <td data-col="nombre apellido"><strong><%= resultadoImportacion.escapar(e.getNombre() + " " + e.getApellido()) %></strong></td>
+                                    <td data-col="codmarc"><%= e.getCodM() %></td>
+                                    <td data-col="turno"><%= e.getTurnoNombre() %></td>
+                                    <td data-col="estado"><span class="badge <%= activo ? "badge-ok" : "badge-off" %>"><%= activo ? "Activo" : "Inactivo" %></span></td>
+                                    <td data-col="fecha"><%= e.getFechaRegTexto() %></td>
+                                    <td class="actions">
+                                        <button type="button" class="btn-icon" data-accion="editar" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                                        <button type="button" class="btn-icon <%= activo ? "danger" : "" %>" data-accion="estado" title="<%= activo ? "Desactivar" : "Activar" %>"><i class="fa-solid <%= activo ? "fa-user-slash" : "fa-user-check" %>"></i></button>
+                                    </td>
+                                </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <%-- Codigos de marcacion con el turno y el empleado que los usa (0 = libre) --%>
+    <div id="datosCodigos" hidden>
+        <% if (codigos != null) { for (codigoMarcacion c : codigos) { %>
+        <span data-codigo="<%= c.getCodigo() %>" data-turno="<%= c.getTurno() %>" data-dueno="<%= c.getIdDueno() %>"></span>
+        <% } } %>
+    </div>
+
+    <dialog id="dlgPersonal">
+        <form action="${pageContext.request.contextPath}/empServlet" method="post" autocomplete="off">
+            <div class="modal-head">
+                <h3 data-titulo-dialogo>Nuevo empleado</h3>
+                <button type="button" class="modal-close" data-cerrar aria-label="Cerrar">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="accion" name="accion" value="crear">
+                <input type="hidden" id="idEMP" name="idEMP">
+
+                <div class="form-grid">
+                    <div class="field">
+                        <label class="required" for="nombre">Nombre</label>
+                        <input type="text" id="nombre" name="nombre" class="input" placeholder="Escriba su Nombre" maxlength="100" required>
+                    </div>
+                    <div class="field">
+                        <label class="required" for="apellido">Apellido</label>
+                        <input type="text" id="apellido" name="apellido" class="input" placeholder="Escriba su Apellido" maxlength="100" required>
+                    </div>
+                    <div class="field">
+                        <label class="required" for="cedula">Cédula</label>
+                        <input type="text" id="cedula" name="cedula" class="input" placeholder="00-0000-000" maxlength="13" required>
+                    </div>
+                    <div class="field">
+                        <label class="required" for="turno">Turno</label>
+                        <select id="turno" name="turno" class="input" required>
+                            <option value="">Seleccione un turno</option>
+                            <option value="M">Mañana</option>
+                            <option value="T">Tarde</option>
+                        </select>
+                    </div>
+                    <div class="field full">
+                        <label class="required" for="codMarc">Código de marcación</label>
+                        <select id="codMarc" name="codMarc" class="input" disabled>
+                            <option value="">Seleccione un turno</option>
+                        </select>
+                        <span class="hint">Se habilita al elegir el turno y muestra solo los códigos libres de ese turno.</span>
+                    </div>
+
+                    <div class="full readonly-box" data-solo-edicion hidden>
+                        <div class="readonly-title"><i class="fa-solid fa-lock"></i> Datos del sistema (no editables)</div>
+                        <div><span class="k">ID del personal:</span> <span data-txt="idemp">-</span></div>
+                        <div><span class="k">Fecha de registro:</span> <span data-txt="fecha">-</span></div>
+                    </div>
                 </div>
             </div>
-        </main>
-    </div>
-    
-    <script>
-    
-    var modal = document.getElementById("modNewEmp");
-	var btn = document.getElementById("btnEmp");
-	var span = document.getElementsByClassName("close")[0];
-	
-	btn.onclick = function(){
-		modal.style.display = "block";
-	}
-	
-	span.onclick = function() {
-		  modal.style.display = "none";
-		}
-    
-	window.onclick = function(){
-		  if (event.target == modal) {
-			    modal.style.display = "none";
-			  }
-	}
-    //Abre un modal para "crear" empleados
-    function abrirModal(){
-    	
-        //Elementos para el modal de crear empleados
-        
-    }
-    </script>
-    
+
+            <div class="modal-foot">
+                <button type="button" class="btn btn-secondary" data-cerrar>Cancelar</button>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+            </div>
+        </form>
+    </dialog>
 </body>
 </html>
