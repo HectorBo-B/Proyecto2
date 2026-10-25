@@ -10,14 +10,20 @@ public class Conexion {
 	private static final String url = "jdbc:mysql://localhost:3306/proy2_asistencia";
 	private static final String user =  "root";
 	private static final String password = "";
+	
+	
 	private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
 	
 	public static Connection getConexion() throws SQLException{
+		
+		//carga el driver de MySQL; si falla, el jar no esta en WEB-INF/lib
 		try {
 			Class.forName(DRIVER);
 		} catch (ClassNotFoundException e) {
-			throw new SQLException("No se encontró el driver de MySQL en el classpath de Tomcat", e);
+			throw new SQLException("No se encontro el driver de MySQL (" + DRIVER
+					+ "). Verifica que el jar este en WEB-INF/lib.", e);
 		}
+		
 		return DriverManager.getConnection(url, user, password);
 	}
 	
