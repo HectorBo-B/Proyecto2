@@ -106,7 +106,7 @@
                                     <td><span class="badge <%= activo ? "badge-ok" : "badge-off" %>"><%= activo ? "Activo" : "Inactivo" %></span></td>
                                     <td class="actions">
                                         <button type="submit" class="btn btn-secondary" form="frmBuscar" name="id" value="<%= e.getEmpleadoID() %>" title="Imprimir asistencia">
-                                            <i class="fa-solid fa-list-check"></i></i> Asistencia
+                                            <i class="fa-solid fa-list-check"></i> Asistencia
                                         </button>
                                     </td>
                                 </tr>
