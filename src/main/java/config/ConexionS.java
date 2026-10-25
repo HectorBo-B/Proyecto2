@@ -14,9 +14,15 @@ public class ConexionS {
 	
 	private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
 	
-	private Connection connection;
-	
 	public static Connection getConexion() throws SQLException{
+		
+		//carga el driver de MySQL; si falla, el jar no esta en WEB-INF/lib
+		try {
+			Class.forName(DRIVER);
+		} catch (ClassNotFoundException e) {
+			throw new SQLException("No se encontro el driver de MySQL (" + DRIVER
+					+ "). Verifica que el jar este en WEB-INF/lib.", e);
+		}
 		
 		return DriverManager.getConnection(url, user, password);
 	}
