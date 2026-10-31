@@ -6,6 +6,7 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 
 import dao.empleadoDAO;
+import dao.auditoriaDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -55,11 +56,16 @@ public class empleadoServlet extends HttpServlet {
 
 		try {
 			if ("crear".equals(accion) || "editar".equals(accion)) {
-				sesion.setAttribute(SESION_OK, guardar(rq, "editar".equals(accion)));
+				boolean editar = "editar".equals(accion);
+
+				sesion.setAttribute(SESION_OK, guardar(rq, editar));
+				auditoriaDAO.registrarSeguro(sesion, "CRUD",
+						(editar ? "Editó" : "Insertó") + " un registro en Personal");
 
 			} else if ("estado".equals(accion)) {
 				dao.alternarEstado(numero(rq.getParameter("idEMP"), "El empleado no es válido."));
 				sesion.setAttribute(SESION_OK, "Estado actualizado correctamente.");
+				auditoriaDAO.registrarSeguro(sesion, "CRUD", "Editó un registro en Personal");
 
 			}
 

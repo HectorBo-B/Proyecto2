@@ -34,12 +34,13 @@
                 <span>${error}</span>
             </div>
 
-            <form action="${pageContext.request.contextPath}/jsp/dashboard.jsp" method="post" autocomplete="off">
-                <div class="field">
-                    <label for="usuario">Usuario</label>
-                    <input type="text" id="usuario" name="usuario" class="input" placeholder="Ingrese su usuario" maxlength="50" required autofocus>
-                </div>
-                <div class="field">
+            <form action="${pageContext.request.contextPath}/loginServlet" method="post" autocomplete="off">
+				<div class="field">
+					<label for="usuario">Usuario</label> <input type="text"
+						id="usuario" name="usuario" class="input"
+						placeholder="Ingrese su usuario" maxlength="50" required autofocus>
+				</div>
+				<div class="field">
                     <label for="password">Contraseña</label>
                     <div class="password-wrap">
                         <input type="password" id="password" name="password" class="input" placeholder="Ingrese su contraseña" maxlength="255" required>

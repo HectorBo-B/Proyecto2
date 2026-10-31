@@ -1,5 +1,10 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
-<% String uri = request.getRequestURI().toLowerCase(); %>
+<%@ page import="model.usuario" %>
+<%
+    String uri = request.getRequestURI().toLowerCase();
+    usuario sesionActual = (usuario) session.getAttribute(usuario.SESION);
+    boolean esAdmin = sesionActual != null && sesionActual.esAdmin();
+%>
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <div class="sidebar-logo">
@@ -26,13 +31,15 @@
         <a href="${pageContext.request.contextPath}/jsp/reportes.jsp" class="sidebar-link <%= uri.contains("reportes") ? "active" : "" %>">
             <i class="fa-solid fa-magnifying-glass-chart"></i> <span>Reportes y Consultas</span>
         </a>
-        <a href="${pageContext.request.contextPath}/jsp/usuarios.jsp" class="sidebar-link <%= uri.contains("usuarios") ? "active" : "" %>">
+        <% if (esAdmin) { %>
+        <a href="${pageContext.request.contextPath}/usuarioServlet" class="sidebar-link <%= uri.contains("usuario") ? "active" : "" %>">
             <i class="fa-solid fa-user-shield"></i> <span>Usuarios y acceso</span>
         </a>
+        <% } %>
     </nav>
 
     <div class="sidebar-footer">
-        <a href="${pageContext.request.contextPath}/jsp/login.jsp" class="sidebar-link sidebar-logout">
+        <a href="${pageContext.request.contextPath}/logoutServlet" class="sidebar-link sidebar-logout">
             <i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Cerrar sesión</span>
         </a>
     </div>

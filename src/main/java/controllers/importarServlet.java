@@ -17,6 +17,7 @@ import java.util.Set;
 
 import dao.empleadoDAO;
 import dao.marcacionDAO;
+import dao.auditoriaDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
@@ -351,6 +352,7 @@ public class importarServlet extends HttpServlet
 
         try
         {
+            auditoriaDAO.registrarSeguro(sesion, "IMPORTACION", "Importó el archivo " + resultado.getNombreArchivo());
             int guardadas = marcDAO.guardar(resultado.getCorrectos());
 
             sesion.removeAttribute(SESION_RESULTADO);

@@ -1,4 +1,45 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List, model.usuario, model.auditoria, model.resultadoImportacion" %>
+<%!
+    private static String esc(String texto)
+    {
+        return resultadoImportacion.escapar(texto);
+    }
+%>
+<%
+    usuario actual = (usuario) session.getAttribute(usuario.SESION);
+
+    //esta página es solo para el administrador
+    if (actual == null)
+    {
+        response.sendRedirect(request.getContextPath() + "/jsp/login.jsp");
+        return;
+    }
+    if (!actual.esAdmin())
+    {
+        response.sendRedirect(request.getContextPath() + "/jsp/dashboard.jsp");
+        return;
+    }
+
+    @SuppressWarnings("unchecked")
+    List<usuario> usuarios = (List<usuario>) request.getAttribute("usuarios");
+
+    //si se abre el JSP directamente, se pasa primero por el servlet para cargar los datos
+    if (usuarios == null)
+    {
+        response.sendRedirect(request.getContextPath() + "/usuarioServlet");
+        return;
+    }
+
+    @SuppressWarnings("unchecked")
+    List<auditoria> registros = (List<auditoria>) request.getAttribute("auditoria");
+
+    String error = (String) request.getAttribute("error");
+    String mensajeOk = (String) session.getAttribute("mensajeUsuarioOk");
+    String mensajeError = (String) session.getAttribute("mensajeUsuarioError");
+    session.removeAttribute("mensajeUsuarioOk");
+    session.removeAttribute("mensajeUsuarioError");
+%>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -25,15 +66,29 @@
                 <div class="page-header">
                     <div>
                         <h1>Usuarios y acceso</h1>
-                        <p>Administre usuarios, permisos por rol y revise la actividad de acceso</p>
+                        <p>Administre los usuarios del sistema y revise la actividad de acceso</p>
                     </div>
                 </div>
 
+                <% if (error != null) { %>
+                <div class="alert alert-error">
+                    <i class="fa-solid fa-circle-exclamation"></i> <%= esc(error) %>
+                </div>
+                <% } %>
+                <% if (mensajeError != null) { %>
+                <div class="alert alert-error">
+                    <i class="fa-solid fa-circle-exclamation"></i> <%= esc(mensajeError) %>
+                </div>
+                <% } %>
+                <% if (mensajeOk != null) { %>
+                <div class="alert alert-ok">
+                    <i class="fa-solid fa-circle-check"></i> <%= esc(mensajeOk) %>
+                </div>
+                <% } %>
+
                 <div class="tabs">
                     <button type="button" class="active" data-grupo="seg" data-panel="panelUsuarios">Usuarios</button>
-                    <button type="button" data-grupo="seg" data-panel="panelPermisos">Permisos</button>
                     <button type="button" data-grupo="seg" data-panel="panelAuditoria">Auditoría</button>
-                    <button type="button" data-grupo="seg" data-panel="panelIntentos">Intentos de login</button>
                 </div>
 
                 <section id="panelUsuarios" data-grupo="seg">
@@ -69,13 +124,14 @@
                             <button type="button" class="btn btn-secondary" data-limpiar="tblUsuarios">
                                 <i class="fa-solid fa-rotate"></i> Limpiar
                             </button>
-                            <span class="counter" data-contador="tblUsuarios">3 resultado(s)</span>
+                            <span class="counter" data-contador="tblUsuarios"><%= usuarios.size() %> resultado(s)</span>
                         </div>
 
                         <div class="table-wrap">
                             <table class="table" id="tblUsuarios"
                                    data-crud="dlgUsuario" data-titulo-editar="Modificar usuario" data-etiqueta="usuario"
-                                   data-auto-id="idusuario" data-auto-fecha="creacion" data-iniciales="intentos=0;bloqueo=-"
+                                   data-servidor="${pageContext.request.contextPath}/usuarioServlet"
+                                   data-param-id="idUsuario" data-fila-id="idusuario"
                                    data-badge-rol="ADMIN|badge-info|Administrador;OPERADOR|badge-info|Operador"
                                    data-badge-estado="1|badge-ok|Activo;0|badge-off|Inactivo">
                                 <thead>
@@ -85,139 +141,37 @@
                                         <th>Correo</th>
                                         <th>Rol</th>
                                         <th>Estado</th>
-                                        <th>Intentos fallidos</th>
-                                        <th>Bloqueado hasta</th>
                                         <th class="actions">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr data-idusuario="1" data-nombre="Administrador" data-apellido="Sistema" data-usuario="admin" data-correo="admin@asistencia.local" data-rol="ADMIN" data-estado="1" data-creacion="01/10/2026 08:00" data-intentos="0" data-bloqueo="-">
-                                        <td data-col="usuario"><strong>admin</strong></td>
-                                        <td data-col="nombre apellido">Administrador Sistema</td>
-                                        <td data-col="correo">admin@asistencia.local</td>
-                                        <td data-col="rol"><span class="badge badge-info">Administrador</span></td>
-                                        <td data-col="estado"><span class="badge badge-ok">Activo</span></td>
-                                        <td data-col="intentos">0</td>
-                                        <td data-col="bloqueo">-</td>
+                                    <% for (usuario u : usuarios) { boolean activo = u.getEstado() == 1; boolean admin = u.esAdmin(); %>
+                                    <tr data-idusuario="<%= u.getId() %>" data-nombre="<%= esc(u.getNombre()) %>" data-apellido="<%= esc(u.getApellido()) %>" data-usuario="<%= esc(u.getUsuario()) %>" data-correo="<%= esc(u.getCorreo()) %>" data-rol="<%= esc(u.getRol()) %>" data-estado="<%= u.getEstado() %>" data-creacion="<%= u.getFechaCreacionTexto() %>">
+                                        <td data-col="usuario"><strong><%= esc(u.getUsuario()) %></strong></td>
+                                        <td data-col="nombre apellido"><%= esc(u.getNombreCompleto()) %></td>
+                                        <td data-col="correo"><%= esc(u.getCorreo()) %></td>
+                                        <td data-col="rol"><span class="badge badge-info"><%= u.getRolNombre() %></span></td>
+                                        <td data-col="estado"><span class="badge <%= activo ? "badge-ok" : "badge-off" %>"><%= activo ? "Activo" : "Inactivo" %></span></td>
                                         <td class="actions">
                                             <button type="button" class="btn-icon" data-accion="editar" title="Editar"><i class="fa-solid fa-pen"></i></button>
-                                            <button type="button" class="btn-icon danger" data-accion="estado" title="Desactivar"><i class="fa-solid fa-user-slash"></i></button>
+                                            <% if (!admin) { %>
+                                            <button type="button" class="btn-icon <%= activo ? "danger" : "" %>" data-accion="estado" title="<%= activo ? "Desactivar" : "Activar" %>"><i class="fa-solid <%= activo ? "fa-user-slash" : "fa-user-check" %>"></i></button>
                                             <button type="button" class="btn-icon danger" data-accion="eliminar" title="Eliminar"><i class="fa-solid fa-trash-can"></i></button>
+                                            <% } %>
                                         </td>
                                     </tr>
-                                    <tr data-idusuario="2" data-nombre="Carlos" data-apellido="Mendoza" data-usuario="operador1" data-correo="c.mendoza@asistencia.local" data-rol="OPERADOR" data-estado="1" data-creacion="02/10/2026 09:10" data-intentos="1" data-bloqueo="-">
-                                        <td data-col="usuario"><strong>operador1</strong></td>
-                                        <td data-col="nombre apellido">Carlos Mendoza</td>
-                                        <td data-col="correo">c.mendoza@asistencia.local</td>
-                                        <td data-col="rol"><span class="badge badge-info">Operador</span></td>
-                                        <td data-col="estado"><span class="badge badge-ok">Activo</span></td>
-                                        <td data-col="intentos">1</td>
-                                        <td data-col="bloqueo">-</td>
-                                        <td class="actions">
-                                            <button type="button" class="btn-icon" data-accion="editar" title="Editar"><i class="fa-solid fa-pen"></i></button>
-                                            <button type="button" class="btn-icon danger" data-accion="estado" title="Desactivar"><i class="fa-solid fa-user-slash"></i></button>
-                                            <button type="button" class="btn-icon danger" data-accion="eliminar" title="Eliminar"><i class="fa-solid fa-trash-can"></i></button>
-                                        </td>
-                                    </tr>
-                                    <tr data-idusuario="3" data-nombre="Pedro" data-apellido="Núñez" data-usuario="operador2" data-correo="p.nunez@asistencia.local" data-rol="OPERADOR" data-estado="0" data-creacion="05/10/2026 11:40" data-intentos="5" data-bloqueo="16/10/2026 14:30">
-                                        <td data-col="usuario"><strong>operador2</strong></td>
-                                        <td data-col="nombre apellido">Pedro Núñez</td>
-                                        <td data-col="correo">p.nunez@asistencia.local</td>
-                                        <td data-col="rol"><span class="badge badge-info">Operador</span></td>
-                                        <td data-col="estado"><span class="badge badge-off">Inactivo</span></td>
-                                        <td data-col="intentos">5</td>
-                                        <td data-col="bloqueo">16/10/2026 14:30</td>
-                                        <td class="actions">
-                                            <button type="button" class="btn-icon" data-accion="editar" title="Editar"><i class="fa-solid fa-pen"></i></button>
-                                            <button type="button" class="btn-icon" data-accion="estado" title="Activar"><i class="fa-solid fa-user-check"></i></button>
-                                            <button type="button" class="btn-icon danger" data-accion="eliminar" title="Eliminar"><i class="fa-solid fa-trash-can"></i></button>
-                                        </td>
-                                    </tr>
+                                    <% } %>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </section>
 
-                <section id="panelPermisos" data-grupo="seg" hidden>
-                    <form action="#" method="post" data-demo>
-                        <input type="hidden" id="rolPermisos" name="rol" value="ADMIN">
-                        <div class="card">
-                            <div class="card-head">
-                                <h3>Permisos por rol</h3>
-                                <div class="tabs tabs-flush">
-                                    <button type="button" class="active" data-permisos-rol="ADMIN">Administrador</button>
-                                    <button type="button" data-permisos-rol="OPERADOR">Operador</button>
-                                </div>
-                            </div>
-
-                            <div class="table-wrap">
-                                <table class="table" id="tblPermisos"
-                                       data-concedidos-admin="DASHBOARD:VER,DASHBOARD:CREAR,DASHBOARD:EDITAR,DASHBOARD:ELIMINAR,PERSONAL:VER,PERSONAL:CREAR,PERSONAL:EDITAR,PERSONAL:ELIMINAR,IMPORTAR:VER,IMPORTAR:CREAR,IMPORTAR:EDITAR,IMPORTAR:ELIMINAR,CONSULTA:VER,CONSULTA:CREAR,CONSULTA:EDITAR,CONSULTA:ELIMINAR,USUARIOS:VER,USUARIOS:CREAR,USUARIOS:EDITAR,USUARIOS:ELIMINAR"
-                                       data-concedidos-operador="DASHBOARD:VER,PERSONAL:VER,PERSONAL:CREAR,PERSONAL:EDITAR,IMPORTAR:VER,IMPORTAR:CREAR,CONSULTA:VER">
-                                    <thead>
-                                        <tr>
-                                            <th>Módulo</th>
-                                            <th class="check">Ver</th>
-                                            <th class="check">Crear</th>
-                                            <th class="check">Editar</th>
-                                            <th class="check">Eliminar</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td><strong>Dashboard</strong></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="DASHBOARD:VER"></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="DASHBOARD:CREAR"></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="DASHBOARD:EDITAR"></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="DASHBOARD:ELIMINAR"></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Personal</strong></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="PERSONAL:VER"></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="PERSONAL:CREAR"></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="PERSONAL:EDITAR"></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="PERSONAL:ELIMINAR"></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Importar</strong></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="IMPORTAR:VER"></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="IMPORTAR:CREAR"></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="IMPORTAR:EDITAR"></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="IMPORTAR:ELIMINAR"></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Consulta individual</strong></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="CONSULTA:VER"></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="CONSULTA:CREAR"></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="CONSULTA:EDITAR"></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="CONSULTA:ELIMINAR"></td>
-                                        </tr>
-                                        <tr>
-                                            <td><strong>Usuarios y acceso</strong></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="USUARIOS:VER"></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="USUARIOS:CREAR"></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="USUARIOS:EDITAR"></td>
-                                            <td class="check"><input type="checkbox" name="permiso" value="USUARIOS:ELIMINAR"></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fa-solid fa-floppy-disk"></i> Guardar permisos
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </section>
-
                 <section id="panelAuditoria" data-grupo="seg" hidden>
                     <div class="card">
                         <div class="card-head">
                             <h3>Auditoría de acceso</h3>
-                            <span class="counter" data-contador="tblAuditoria">3 resultado(s)</span>
+                            <span class="counter" data-contador="tblAuditoria"><%= registros == null ? 0 : registros.size() %> resultado(s)</span>
                         </div>
 
                         <div class="toolbar">
@@ -225,13 +179,19 @@
                                 <label for="buscarAuditoria">Buscar</label>
                                 <input type="text" id="buscarAuditoria" class="input" placeholder="Usuario o descripción..." data-buscar="tblAuditoria">
                             </div>
-                            <div class="tabs tabs-flush">
-                                <button type="button" class="active" data-filtro-de="tblAuditoria" data-campo="accion" data-filtro="">Todas</button>
-                                <button type="button" data-filtro-de="tblAuditoria" data-campo="accion" data-filtro="LOGIN">Login</button>
-                                <button type="button" data-filtro-de="tblAuditoria" data-campo="accion" data-filtro="LOGOUT">Logout</button>
-                                <button type="button" data-filtro-de="tblAuditoria" data-campo="accion" data-filtro="IMPORTACION">Importación</button>
-                                <button type="button" data-filtro-de="tblAuditoria" data-campo="accion" data-filtro="CRUD">CRUD</button>
+                            <div class="field">
+                                <label for="filtroAccion">Acción</label>
+                                <select id="filtroAccion" class="input" data-filtro-select="tblAuditoria" data-campo="accion">
+                                    <option value="">Todas</option>
+                                    <option value="LOGIN">Login</option>
+                                    <option value="LOGOUT">Logout</option>
+                                    <option value="IMPORTACION">Importación</option>
+                                    <option value="CRUD">CRUD</option>
+                                </select>
                             </div>
+                            <button type="button" class="btn btn-secondary" data-limpiar="tblAuditoria">
+                                <i class="fa-solid fa-rotate"></i> Limpiar
+                            </button>
                         </div>
 
                         <div class="table-wrap">
@@ -245,78 +205,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr data-accion="LOGIN">
-                                        <td>16/10/2026 08:01</td>
-                                        <td><strong>admin</strong></td>
-                                        <td><span class="badge badge-ok">LOGIN</span></td>
-                                        <td>Inicio de sesión</td>
+                                    <% if (registros != null) { for (auditoria a : registros) { %>
+                                    <tr data-accion="<%= esc(a.getAccion()) %>">
+                                        <td><%= a.getFechaTexto() %></td>
+                                        <td><strong><%= esc(a.getUsuario()) %></strong></td>
+                                        <td><span class="badge <%= a.getBadge() %>"><%= a.getAccionTexto() %></span></td>
+                                        <td><%= esc(a.getDescripcion()) %></td>
                                     </tr>
-                                    <tr data-accion="IMPORTACION">
-                                        <td>16/10/2026 08:15</td>
-                                        <td><strong>admin</strong></td>
-                                        <td><span class="badge badge-info">IMPORTACION</span></td>
-                                        <td>Importación de marcaciones desde archivo .xlsx</td>
-                                    </tr>
-                                    <tr data-accion="CRUD">
-                                        <td>16/10/2026 09:02</td>
-                                        <td><strong>operador1</strong></td>
-                                        <td><span class="badge badge-warn">CRUD</span></td>
-                                        <td>Registró personal con código de marcación 30</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="panelIntentos" data-grupo="seg" hidden>
-                    <div class="card">
-                        <div class="card-head">
-                            <h3>Intentos de inicio de sesión</h3>
-                            <span class="counter" data-contador="tblIntentos">3 resultado(s)</span>
-                        </div>
-
-                        <div class="toolbar">
-                            <div class="field">
-                                <label for="buscarIntento">Buscar</label>
-                                <input type="text" id="buscarIntento" class="input" placeholder="Usuario o IP de origen..." data-buscar="tblIntentos">
-                            </div>
-                            <div class="tabs tabs-flush">
-                                <button type="button" class="active" data-filtro-de="tblIntentos" data-campo="exitoso" data-filtro="">Todos</button>
-                                <button type="button" data-filtro-de="tblIntentos" data-campo="exitoso" data-filtro="1">Exitosos</button>
-                                <button type="button" data-filtro-de="tblIntentos" data-campo="exitoso" data-filtro="0">Fallidos</button>
-                            </div>
-                        </div>
-
-                        <div class="table-wrap">
-                            <table class="table" id="tblIntentos">
-                                <thead>
-                                    <tr>
-                                        <th>Fecha del intento</th>
-                                        <th>Usuario</th>
-                                        <th>IP de origen</th>
-                                        <th>Resultado</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr data-exitoso="1">
-                                        <td>16/10/2026 08:01</td>
-                                        <td><strong>admin</strong></td>
-                                        <td>192.168.1.10</td>
-                                        <td><span class="badge badge-ok">Exitoso</span></td>
-                                    </tr>
-                                    <tr data-exitoso="0">
-                                        <td>16/10/2026 13:52</td>
-                                        <td><strong>operador2</strong></td>
-                                        <td>192.168.1.24</td>
-                                        <td><span class="badge badge-bad">Fallido</span></td>
-                                    </tr>
-                                    <tr data-exitoso="0">
-                                        <td>16/10/2026 13:58</td>
-                                        <td><strong>operador2</strong></td>
-                                        <td>192.168.1.24</td>
-                                        <td><span class="badge badge-bad">Fallido</span></td>
-                                    </tr>
+                                    <% } } %>
                                 </tbody>
                             </table>
                         </div>
@@ -327,7 +223,7 @@
     </div>
 
     <dialog id="dlgUsuario">
-        <form action="#" method="post" autocomplete="off" data-demo>
+        <form action="${pageContext.request.contextPath}/usuarioServlet" method="post" autocomplete="off">
             <div class="modal-head">
                 <h3 data-titulo-dialogo>Nuevo usuario</h3>
                 <button type="button" class="modal-close" data-cerrar aria-label="Cerrar">
@@ -336,6 +232,7 @@
             </div>
 
             <div class="modal-body">
+                <input type="hidden" id="accionUsuario" name="accion" value="crear">
                 <input type="hidden" id="idUsuario" name="idUsuario">
 
                 <div class="form-grid">
@@ -349,16 +246,16 @@
                     </div>
                     <div class="field">
                         <label class="required" for="usuario">Usuario</label>
-                        <input type="text" id="usuario" name="usuario" class="input" maxlength="50" data-unico required>
+                        <input type="text" id="usuario" name="usuario" class="input" maxlength="50" required>
                     </div>
                     <div class="field">
                         <label class="required" for="correo">Correo</label>
-                        <input type="email" id="correo" name="correo" class="input" maxlength="100" data-unico required>
+                        <input type="email" id="correo" name="correo" class="input" maxlength="100" required>
                     </div>
                     <div class="field full">
                         <label for="clave">Contraseña</label>
                         <div class="password-wrap">
-                            <input type="password" id="clave" name="password" class="input" maxlength="255" data-requerido-creacion required>
+                            <input type="password" id="clave" name="password" class="input" minlength="8" maxlength="100" data-requerido-creacion required>
                             <button type="button" class="toggle-pass" data-ver-clave aria-label="Mostrar contraseña">
                                 <i class="fa-solid fa-eye"></i>
                             </button>
@@ -366,11 +263,12 @@
                         <span class="hint" data-solo-edicion hidden>Déjela vacía para conservar la contraseña actual.</span>
                     </div>
                     <div class="field">
-                        <label class="required" for="rol">Rol</label>
-                        <select id="rol" name="rol" class="input" required>
+                        <label for="rol">Rol</label>
+                        <select id="rol" name="rol" class="input" disabled>
                             <option value="OPERADOR">Operador</option>
                             <option value="ADMIN">Administrador</option>
                         </select>
+                        <span class="hint">Solo puede existir un administrador; los usuarios nuevos son operadores.</span>
                     </div>
                     <div class="field">
                         <label class="required" for="estadoUsuario">Estado</label>
@@ -384,8 +282,6 @@
                         <div class="readonly-title"><i class="fa-solid fa-lock"></i> Datos del sistema (no editables)</div>
                         <div><span class="k">ID del usuario:</span> <span data-txt="idusuario">-</span></div>
                         <div><span class="k">Fecha de creación:</span> <span data-txt="creacion">-</span></div>
-                        <div><span class="k">Intentos fallidos:</span> <span data-txt="intentos">-</span></div>
-                        <div><span class="k">Bloqueado hasta:</span> <span data-txt="bloqueo">-</span></div>
                     </div>
                 </div>
             </div>
