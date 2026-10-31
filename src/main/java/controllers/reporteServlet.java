@@ -6,6 +6,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -28,6 +31,9 @@ public class reporteServlet extends HttpServlet
     private static final String SESION_OK = "mensajeReporteOk";
     private static final String SESION_ERROR = "mensajeReporteError";
     private static final int MAXIMO_DIAS = 366;
+    private static final List<String> OBSERVACIONES = Arrays.asList("Vacaciones", "Incapacidad", "Capacitación", "Permiso", "Misión oficial");
+    private static final String OTRO = "Otro";
+    private static final String QUITAR = "Quitar";
 
     private final reporteDAO dao = new reporteDAO();
 
@@ -87,12 +93,10 @@ public class reporteServlet extends HttpServlet
         rq.setCharacterEncoding("UTF-8");
 
         HttpSession sesion = rq.getSession();
-        int id;
         LocalDate desde, hasta;
 
         try
         {
-            id = numero(rq.getParameter("idEMP"));
             desde = fecha(rq.getParameter("desde"), "La fecha inicial");
             hasta = fecha(rq.getParameter("hasta"), "La fecha final");
         }
@@ -106,17 +110,51 @@ public class reporteServlet extends HttpServlet
         {
             if ("observaciones".equals(rq.getParameter("accion")))
             {
-                String texto = rq.getParameter("observacion") == null ? "" : rq.getParameter("observacion").trim();
+                String tipo = rq.getParameter("tipo") == null ? "" : rq.getParameter("tipo").trim();
+                String texto = "";
+                String[] marcados = rq.getParameterValues("idEMP");
                 String[] marcadas = rq.getParameterValues("fechas");
+                Set<Integer> ids = new LinkedHashSet<>();
                 Set<LocalDate> fechas = new TreeSet<>();
 
-                if (texto.length() > 255)
+                if (OTRO.equals(tipo))
                 {
-                    throw new IllegalArgumentException("La observación no puede superar 255 caracteres.");
+                    texto = rq.getParameter("otro") == null ? "" : rq.getParameter("otro").trim();
+
+                    if (texto.isEmpty())
+                    {
+                        throw new IllegalArgumentException("Escribe la observación.");
+                    }
+                    if (texto.length() > 255)
+                    {
+                        throw new IllegalArgumentException("La observación no puede superar 255 caracteres.");
+                    }
+                }
+                else if (OBSERVACIONES.contains(tipo))
+                {
+                    texto = tipo;
+                }
+                else if (!QUITAR.equals(tipo))
+                {
+                    throw new IllegalArgumentException("Selecciona una observación válida.");
+                }
+
+                if (marcados == null || marcados.length == 0)
+                {
+                    throw new IllegalArgumentException("Selecciona al menos un empleado.");
                 }
                 if (marcadas == null || marcadas.length == 0)
                 {
                     throw new IllegalArgumentException("Selecciona al menos un día.");
+                }
+                if (ChronoUnit.DAYS.between(desde, hasta) >= MAXIMO_DIAS || hasta.isBefore(desde))
+                {
+                    throw new IllegalArgumentException("El rango de fechas no es válido.");
+                }
+
+                for (String marcado : marcados)
+                {
+                    ids.add(numero(marcado));
                 }
 
                 for (String marcada : marcadas)
@@ -125,16 +163,14 @@ public class reporteServlet extends HttpServlet
 
                     if (dia.isBefore(desde) || dia.isAfter(hasta))
                     {
-                        throw new IllegalArgumentException("Hay un día fuera del rango del reporte.");
+                        throw new IllegalArgumentException("Hay un día fuera del rango seleccionado.");
                     }
                     fechas.add(dia);
                 }
 
-                int guardados = dao.guardarObservaciones(id, new ArrayList<>(fechas), texto,
-                        "1".equals(rq.getParameter("justificada")));
-                sesion.setAttribute(SESION_OK, texto.isEmpty()
-                        ? "Observación eliminada de " + guardados + " día(s)."
-                        : "Observación guardada en " + guardados + " día(s).");
+                dao.guardarObservaciones(new ArrayList<>(ids), new ArrayList<>(fechas), texto);
+                sesion.setAttribute(SESION_OK, (texto.isEmpty() ? "Observación eliminada de " : "Observación guardada en ")
+                        + fechas.size() + " día(s) para " + ids.size() + " empleado(s).");
             }
         }
         catch (IllegalArgumentException e)
@@ -147,7 +183,7 @@ public class reporteServlet extends HttpServlet
             sesion.setAttribute(SESION_ERROR, "No se pudo guardar la observación en la base de datos.");
         }
 
-        rsp.sendRedirect(rq.getContextPath() + "/reporteServlet?id=" + id + "&desde=" + desde + "&hasta=" + hasta);
+        rsp.sendRedirect(rq.getContextPath() + "/reporteServlet?desde=" + desde + "&hasta=" + hasta);
     }
 
     private void listado(HttpServletRequest rq, HttpServletResponse rsp) throws ServletException, IOException

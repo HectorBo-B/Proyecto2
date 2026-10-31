@@ -16,7 +16,7 @@ public class reporteAsistencia
     private LocalDate desde;
     private LocalDate hasta;
     private final List<dia> dias = new ArrayList<>();
-    private int ausencias, tardanzas, justificadas;
+    private int ausencias, tardanzas;
     private long segundosTardanza;
 
     public reporteAsistencia()
@@ -48,10 +48,6 @@ public class reporteAsistencia
         {
             tardanzas++;
             segundosTardanza += registro.getTardanzaSegundos();
-            if (registro.isJustificada())
-            {
-                justificadas++;
-            }
         }
     }
 
@@ -71,10 +67,6 @@ public class reporteAsistencia
 
     public int getTardanzas() {return tardanzas;}
 
-    public int getJustificadas() {return justificadas;}
-
-    public int getInjustificadas() {return tardanzas - justificadas;}
-
     public long getSegundosTardanza() {return segundosTardanza;}
 
     public String getTiempoTardanzaTexto() {return duracion(segundosTardanza);}
@@ -84,7 +76,7 @@ public class reporteAsistencia
         private final LocalDate fecha;
         private LocalTime entrada;
         private LocalTime salida;
-        private boolean ausente, justificada;
+        private boolean ausente;
         private long tardanzaSegundos;
         private String observacion = "";
 
@@ -104,9 +96,6 @@ public class reporteAsistencia
         public boolean isAusente() {return ausente;}
         public void setAusente(boolean ausente) {this.ausente = ausente;}
 
-        public boolean isJustificada() {return justificada;}
-        public void setJustificada(boolean justificada) {this.justificada = justificada;}
-
         public long getTardanzaSegundos() {return tardanzaSegundos;}
         public void setTardanzaSegundos(long tardanzaSegundos) {this.tardanzaSegundos = tardanzaSegundos;}
 
@@ -123,6 +112,11 @@ public class reporteAsistencia
             return DIAS[fecha.getDayOfWeek().getValue() - 1];
         }
 
+        public String getNombreDiaMarcado()
+        {
+            return getNombreDia() + (ausente ? "*" : "");
+        }
+
         public String getFechaTexto()
         {
             return fecha.format(FECHA_TEXTO);
@@ -136,6 +130,11 @@ public class reporteAsistencia
         public String getEntradaTexto()
         {
             return entrada == null ? "" : entrada.format(HORA_TEXTO);
+        }
+
+        public String getMarcaTardanza()
+        {
+            return tardanzaSegundos > 0 ? "(T)" : "";
         }
 
         public String getSalidaTexto()

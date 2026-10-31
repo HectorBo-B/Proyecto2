@@ -126,12 +126,12 @@ public class reporteDAO
         return marcas;
     }
 
-    private Map<LocalDate, String[]> observaciones(int idPersonal, LocalDate desde, LocalDate hasta) throws SQLException
+    private Map<LocalDate, String> observaciones(int idPersonal, LocalDate desde, LocalDate hasta) throws SQLException
     {
-        String sql = "SELECT FECHA, OBSERVACION, JUSTIFICADA FROM observaciones_asistencia "
+        String sql = "SELECT FECHA, OBSERVACION FROM observaciones_asistencia "
                 + "WHERE ID_PERSONAL = ? AND FECHA BETWEEN ? AND ?";
 
-        Map<LocalDate, String[]> notas = new TreeMap<>();
+        Map<LocalDate, String> notas = new TreeMap<>();
 
         try (Connection con = Conexion.getConexion();
              PreparedStatement ps = con.prepareStatement(sql))
@@ -144,8 +144,7 @@ public class reporteDAO
             {
                 while (rs.next())
                 {
-                    notas.put(rs.getDate("FECHA").toLocalDate(),
-                            new String[] {rs.getString("OBSERVACION"), String.valueOf(rs.getInt("JUSTIFICADA"))});
+                    notas.put(rs.getDate("FECHA").toLocalDate(), rs.getString("OBSERVACION"));
                 }
             }
         }
@@ -156,7 +155,7 @@ public class reporteDAO
     {
         LocalTime[] horario = horario(emp.getTurno());
         Map<LocalDate, List<LocalTime>> marcas = marcaciones(emp.getCodM(), desde, hasta);
-        Map<LocalDate, String[]> notas = observaciones(emp.getEmpleadoID(), desde, hasta);
+        Map<LocalDate, String> notas = observaciones(emp.getEmpleadoID(), desde, hasta);
         reporteAsistencia reporte = new reporteAsistencia(emp, desde, hasta);
         LocalDate hoy = LocalDate.now();
 
@@ -184,11 +183,14 @@ public class reporteDAO
                 }
             }
 
+            registro.setObservacion(notas.get(fecha));
+
             if (!registro.isFinDeSemana())
             {
                 boolean incompleto = registro.getEntrada() == null || registro.getSalida() == null;
+                boolean conObservacion = !registro.getObservacion().isEmpty();
 
-                if (incompleto && fecha.isBefore(hoy))
+                if (incompleto && fecha.isBefore(hoy) && !conObservacion)
                 {
                     registro.setAusente(true);
                 }
@@ -198,25 +200,17 @@ public class reporteDAO
                 }
             }
 
-            String[] nota = notas.get(fecha);
-
-            if (nota != null)
-            {
-                registro.setObservacion(nota[0]);
-                registro.setJustificada("1".equals(nota[1]));
-            }
-
             reporte.agregar(registro);
         }
         return reporte;
     }
 
-    public int guardarObservaciones(int idPersonal, List<LocalDate> fechas, String texto, boolean justificada) throws SQLException
+    public void guardarObservaciones(List<Integer> ids, List<LocalDate> fechas, String texto) throws SQLException
     {
         String sql = texto.isEmpty()
                 ? "DELETE FROM observaciones_asistencia WHERE ID_PERSONAL = ? AND FECHA = ?"
-                : "INSERT INTO observaciones_asistencia (ID_PERSONAL, FECHA, OBSERVACION, JUSTIFICADA) VALUES (?, ?, ?, ?) "
-                + "ON DUPLICATE KEY UPDATE OBSERVACION = VALUES(OBSERVACION), JUSTIFICADA = VALUES(JUSTIFICADA)";
+                : "INSERT INTO observaciones_asistencia (ID_PERSONAL, FECHA, OBSERVACION) VALUES (?, ?, ?) "
+                + "ON DUPLICATE KEY UPDATE OBSERVACION = VALUES(OBSERVACION)";
 
         try (Connection con = Conexion.getConexion())
         {
@@ -224,17 +218,19 @@ public class reporteDAO
 
             try (PreparedStatement ps = con.prepareStatement(sql))
             {
-                for (LocalDate fecha : fechas)
+                for (int idPersonal : ids)
                 {
-                    ps.setInt(1, idPersonal);
-                    ps.setDate(2, Date.valueOf(fecha));
-
-                    if (!texto.isEmpty())
+                    for (LocalDate fecha : fechas)
                     {
-                        ps.setString(3, texto);
-                        ps.setInt(4, justificada ? 1 : 0);
+                        ps.setInt(1, idPersonal);
+                        ps.setDate(2, Date.valueOf(fecha));
+
+                        if (!texto.isEmpty())
+                        {
+                            ps.setString(3, texto);
+                        }
+                        ps.addBatch();
                     }
-                    ps.addBatch();
                 }
                 ps.executeBatch();
                 con.commit();
@@ -245,6 +241,5 @@ public class reporteDAO
                 throw e;
             }
         }
-        return fechas.size();
     }
 }
