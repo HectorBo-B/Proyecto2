@@ -108,7 +108,7 @@
                         <div>
                             <span class="stat-label">Registros duplicados</span>
                             <span class="stat-value"><%= resultado.getDuplicados().size() %></span>
-                            <span class="stat-sub">no se guardarán</span>
+                            <span class="stat-sub">se guardan en la BD</span>
                         </div>
                         <button type="button" class="btn-icon stat-ver" data-abrir="dlgDuplicados" title="Ver registros" aria-label="Ver registros duplicados" <%= resultado.getDuplicados().size() == 0 ? "disabled" : "" %>>
                             <i class="fa-solid fa-eye"></i>
@@ -137,7 +137,13 @@
                         </button>
                     </div>
                     </div>
-
+                    
+                    <% if (!resultado.getOmitidos().isEmpty()) { %>
+					<p class="stat-sub" style="margin-bottom: 12px;">
+					    <i class="fa-solid fa-circle-info"></i>
+					    <%= resultado.getOmitidos().size() %> registro(s) existentes en la BD
+					</p>
+					<% } %>
                     <div class="form-actions">
                         <form action="${pageContext.request.contextPath}/ImportarServlet?accion=cancelar" method="post">
                             <button type="submit" class="btn btn-secondary">
@@ -145,7 +151,7 @@
                             </button>
                         </form>
                         <form id="frmGuardar" action="${pageContext.request.contextPath}/ImportarServlet?accion=guardar" method="post"
-                              data-validos="<%= resultado.getCorrectos().size() %>"
+                              data-validos="<%= resultado.getGuardables().size() %>"
                               data-incidencias="<%= resultado.hayIncidencias() ? 1 : 0 %>">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fa-solid fa-floppy-disk"></i> Guardar

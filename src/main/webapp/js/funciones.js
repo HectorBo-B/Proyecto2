@@ -8,6 +8,7 @@
     var consultaMovil = window.matchMedia('(max-width: 960px)');
     var permisosPorRol = {};
     var rolActual = '';
+    var dialogoConfirmacion = null;
 
     function leerPreferenciaMenu() {
         try {
@@ -42,6 +43,74 @@
                 notificacion.remove();
             }, 300);
         }, 2800);
+    }
+
+    function obtenerDialogoConfirmacion()
+    {
+        var dialogo = null;
+
+        if (dialogoConfirmacion)
+        {
+            return dialogoConfirmacion;
+        }
+
+        dialogo = document.createElement('dialog');
+        dialogo.id = 'dlgConfirmar';
+        dialogo.className = 'dialog-confirmar';
+        dialogo.setAttribute('aria-labelledby', 'confirmarTitulo');
+        dialogo.innerHTML =
+            '<div class="modal-head">' +
+                '<h3 id="confirmarTitulo" data-confirmar-titulo></h3>' +
+                '<button type="button" class="modal-close" data-cerrar aria-label="Cerrar">' +
+                    '<i class="fa-solid fa-xmark"></i>' +
+                '</button>' +
+            '</div>' +
+            '<div class="modal-body confirmar-cuerpo">' +
+                '<span class="confirmar-icono" aria-hidden="true"><i class="fa-solid fa-triangle-exclamation"></i></span>' +
+                '<p data-confirmar-mensaje></p>' +
+            '</div>' +
+            '<div class="modal-foot">' +
+                '<button type="button" class="btn btn-secondary" data-cerrar data-confirmar-cancelar>Cancelar</button>' +
+                '<button type="button" class="btn btn-primary" data-confirmar-aceptar>Aceptar</button>' +
+            '</div>';
+
+        dialogo.addEventListener('click', function(evento)
+        {
+            var accion = null;
+
+            if (!evento.target.closest('[data-confirmar-aceptar]'))
+            {
+                return;
+            }
+            accion = dialogo.alAceptar;
+            dialogo.alAceptar = null;
+            dialogo.close();
+            if (accion)
+            {
+                accion();
+            }
+        });
+
+        document.body.appendChild(dialogo);
+        dialogoConfirmacion = dialogo;
+        return dialogo;
+    }
+
+    function confirmar(opciones, alAceptar)
+    {
+        var dialogo = obtenerDialogoConfirmacion();
+        var botonAceptar = dialogo.querySelector('[data-confirmar-aceptar]');
+        var botonCancelar = dialogo.querySelector('[data-confirmar-cancelar]');
+        var peligro = Boolean(opciones.peligro);
+
+        dialogo.querySelector('[data-confirmar-titulo]').textContent = opciones.titulo;
+        dialogo.querySelector('[data-confirmar-mensaje]').textContent = opciones.mensaje;
+        botonAceptar.textContent = opciones.textoAceptar || 'Aceptar';
+        botonAceptar.className = 'btn ' + (peligro ? 'btn-danger' : 'btn-primary');
+        dialogo.classList.toggle('confirmar-peligro', peligro);
+        dialogo.alAceptar = alAceptar;
+        dialogo.showModal();
+        (peligro ? botonCancelar : botonAceptar).focus();
     }
 
     function cerrarMenu() {
@@ -421,22 +490,42 @@
         }
     }
 
-    function mostrarNombreArchivo(archivo, etiqueta, zona) {
-        if (!etiqueta) {
-            return;
-        }
-        if (archivo) {
-            etiqueta.textContent = archivo.name;
-            if (zona) {
-                zona.classList.add('has-file');
-            }
-            return;
-        }
-        etiqueta.textContent = TEXTO_ARCHIVO_VACIO;
-        if (zona) {
-            zona.classList.remove('has-file');
-        }
-    }
+	function mostrarNombreArchivo(archivo, etiqueta, zona) {
+	    if (!etiqueta) {
+	        return;
+	    }
+	    var titulo = zona ? zona.querySelector('strong') : null;
+	    var icono = zona ? zona.querySelector('i') : null;
+
+	    if (archivo) {
+	        etiqueta.textContent = archivo.name + ' (' + Math.max(1, Math.round(archivo.size / 1024)) + ' KB)';
+	        if (titulo) {
+	            titulo.textContent = 'Archivo subido correctamente';
+	        }
+	        if (icono) {
+	            icono.className = 'fa-solid fa-circle-check';
+	        }
+	        if (zona) {
+	            zona.classList.add('has-file');
+	            zona.classList.remove('flash');
+	            void zona.offsetWidth;
+	            zona.classList.add('flash');
+	        }
+	        return;
+	    }
+
+	    etiqueta.textContent = TEXTO_ARCHIVO_VACIO;
+	    if (titulo) {
+	        titulo.textContent = 'Haga clic o arrastre un archivo aquí';
+	    }
+	    if (icono) {
+	        icono.className = 'fa-solid fa-cloud-arrow-up';
+	    }
+	    if (zona) {
+	        zona.classList.remove('has-file');
+	        zona.classList.remove('flash');
+	    }
+	}
 
     function extensionValida(archivo) {
         var partes = archivo.name.toLowerCase().split('.');
@@ -507,24 +596,41 @@
         }
     }
 
-    function iniciarGuardado() {
+    function iniciarGuardado()
+    {
         var formulario = document.getElementById('frmGuardar');
-        if (!formulario) {
+        var confirmado = false;
+
+        if (!formulario)
+        {
             return;
         }
 
-        formulario.addEventListener('submit', function(evento) {
+        formulario.addEventListener('submit', function(evento)
+        {
             var validos = parseInt(formulario.getAttribute('data-validos'), 10) || 0;
             var hayIncidencias = formulario.getAttribute('data-incidencias') === '1';
 
-            if (validos === 0) {
+            if (validos === 0)
+            {
                 evento.preventDefault();
                 mostrarNotificacion('No hay registros válidos para guardar.');
                 return;
             }
 
-            if (hayIncidencias && !window.confirm('¿Está seguro de guardar solamente ' + validos + ' registro(s) válido(s)?')) {
+            if (hayIncidencias && !confirmado)
+            {
                 evento.preventDefault();
+                confirmar({
+                    titulo: 'Guardar registros válidos',
+                    mensaje: '¿Está seguro de guardar solamente ' + validos + ' registro(s) válido(s)?',
+                    textoAceptar: 'Guardar'
+                }, function()
+                {
+                    confirmado = true;
+                    formulario.querySelector('button[type="submit"]').disabled = true;
+                    formulario.submit();
+                });
                 return;
             }
 
@@ -663,38 +769,52 @@
             return;
         }
 
-        if (accion === 'estado') {
+        if (accion === 'estado')
+        {
             activo = fila.dataset.estado === '1';
-            if (!window.confirm('¿' + (activo ? 'Desactivar' : 'Activar') + ' «' + etiqueta + '»?')) {
-                return;
-            }
-            if (tabla.hasAttribute('data-servidor')) {
-                enviarAccion(tabla.getAttribute('data-servidor'), 'estado',
-                    tabla.getAttribute('data-param-id') || 'idEMP',
-                    fila.dataset[tabla.getAttribute('data-fila-id') || 'idemp']);
-                return;
-            }
-            fila.dataset.estado = activo ? '0' : '1';
-            renderizarFila(tabla, fila, ['estado']);
-            actualizarBotonEstado(fila);
-            filtrarTabla(tabla);
-            mostrarNotificacion((activo ? 'Registro desactivado' : 'Registro activado') + SUFIJO_DEMO);
+            confirmar({
+                titulo: activo ? 'Desactivar registro' : 'Activar registro',
+                mensaje: '¿Desea ' + (activo ? 'desactivar' : 'activar') + ' «' + etiqueta + '»?',
+                textoAceptar: activo ? 'Desactivar' : 'Activar',
+                peligro: activo
+            }, function()
+            {
+                if (tabla.hasAttribute('data-servidor'))
+                {
+                    enviarAccion(tabla.getAttribute('data-servidor'), 'estado',
+                        tabla.getAttribute('data-param-id') || 'idEMP',
+                        fila.dataset[tabla.getAttribute('data-fila-id') || 'idemp']);
+                    return;
+                }
+                fila.dataset.estado = activo ? '0' : '1';
+                renderizarFila(tabla, fila, ['estado']);
+                actualizarBotonEstado(fila);
+                filtrarTabla(tabla);
+                mostrarNotificacion((activo ? 'Registro desactivado' : 'Registro activado') + SUFIJO_DEMO);
+            });
             return;
         }
 
-        if (accion === 'eliminar') {
-            if (!window.confirm('¿Eliminar «' + etiqueta + '»? Esta acción no se puede deshacer.')) {
-                return;
-            }
-            if (tabla.hasAttribute('data-servidor')) {
-                enviarAccion(tabla.getAttribute('data-servidor'), 'eliminar',
-                    tabla.getAttribute('data-param-id') || 'idEMP',
-                    fila.dataset[tabla.getAttribute('data-fila-id') || 'idemp']);
-                return;
-            }
-            fila.remove();
-            filtrarTabla(tabla);
-            mostrarNotificacion('Registro eliminado' + SUFIJO_DEMO);
+        if (accion === 'eliminar')
+        {
+            confirmar({
+                titulo: 'Eliminar registro',
+                mensaje: '¿Desea eliminar «' + etiqueta + '»? Esta acción no se puede deshacer.',
+                textoAceptar: 'Eliminar',
+                peligro: true
+            }, function()
+            {
+                if (tabla.hasAttribute('data-servidor'))
+                {
+                    enviarAccion(tabla.getAttribute('data-servidor'), 'eliminar',
+                        tabla.getAttribute('data-param-id') || 'idEMP',
+                        fila.dataset[tabla.getAttribute('data-fila-id') || 'idemp']);
+                    return;
+                }
+                fila.remove();
+                filtrarTabla(tabla);
+                mostrarNotificacion('Registro eliminado' + SUFIJO_DEMO);
+            });
         }
     });
 

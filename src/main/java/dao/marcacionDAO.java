@@ -10,8 +10,11 @@ import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import config.Conexion;
@@ -19,6 +22,8 @@ import model.marcacion;
 
 public class marcacionDAO {
 
+	//dos marcaciones del mismo empleado y dia con esta diferencia (o menos) se consideran repetidas por error
+	public static final long VENTANA_DUPLICADO_SEGUNDOS = 60;
 	private static final DateTimeFormatter FORMATO = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 	//Clave unica de una marcacion: codigo + fecha y hora
@@ -91,5 +96,33 @@ public class marcacionDAO {
 		}
 
 		return insertadas;
+	}
+	//Devuelve las marcaciones ya guardadas entre dos fechas, agrupadas por codigo
+	public Map<Integer, List<LocalDateTime>> marcacionesExistentes(LocalDate desde, LocalDate hasta) throws SQLException {
+
+		String sql = "SELECT CODIGO_MARCACION, FECHA, HORA FROM registros_asistencia "
+				+ "WHERE FECHA BETWEEN ? AND ?";
+
+		Map<Integer, List<LocalDateTime>> mapa = new HashMap<>();
+
+		try (Connection con = Conexion.getConexion();
+			 PreparedStatement ps = con.prepareStatement(sql)) {
+
+			ps.setDate(1, Date.valueOf(desde));
+			ps.setDate(2, Date.valueOf(hasta));
+
+			try (ResultSet rs = ps.executeQuery()) {
+				while (rs.next()) {
+
+					LocalDateTime fechaHora = rs.getDate("FECHA").toLocalDate()
+							.atTime(rs.getTime("HORA").toLocalTime());
+
+					mapa.computeIfAbsent(rs.getInt("CODIGO_MARCACION"), k -> new ArrayList<>())
+						.add(fechaHora);
+				}
+			}
+		}
+
+		return mapa;
 	}
 }

@@ -9,6 +9,7 @@ public class marcacion implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	//Estados posibles de una marcacion despues de validarla
+	public static final String OMITIDO = "OMITIDO";
 	public static final String CORRECTO = "CORRECTO";
 	public static final String DUPLICADO = "DUPLICADO";
 	public static final String RECHAZADO = "RECHAZADO";

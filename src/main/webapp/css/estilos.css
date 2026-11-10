@@ -323,6 +323,15 @@ a
 {
     background: #2E3944;
 }
+.btn-danger
+{
+    background: #DC2626;
+    color: #FFFFFF;
+}
+.btn-danger:hover
+{
+    background: #B91C1C;
+}
 .btn-block
 {
     width: 100%;
@@ -925,6 +934,33 @@ body.menu-anim.menu-oculto .sidebar
 .dropzone.has-file
 {
     border-style: solid;
+    border-color: #22C55E;
+    background: #163A25;
+}
+.dropzone.has-file i
+{
+    background: #22C55E;
+    color: #0F1419;
+}
+.dropzone.has-file strong
+{
+    color: #4ADE80;
+}
+.dropzone.has-file span
+{
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 600;
+}
+.dropzone.flash
+{
+    animation: dropzone-flash 0.6s ease;
+}
+@keyframes dropzone-flash
+{
+    0%   { transform: scale(1);    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+    50%  { transform: scale(1.02); box-shadow: 0 0 0 12px rgba(34, 197, 94, 0); }
+    100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
 }
 .shifts
 {
@@ -1255,6 +1291,42 @@ dialog[open]::backdrop
 dialog.dialog-ancho
 {
     width: min(980px, 96vw);
+}
+dialog.dialog-confirmar
+{
+    width: min(440px, 94vw);
+}
+.confirmar-cuerpo
+{
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+.confirmar-icono
+{
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    background: var(--brand-soft);
+    color: #5EEAD4;
+}
+.confirmar-peligro .confirmar-icono
+{
+    background: #3F1D1D;
+    color: #F87171;
+}
+.confirmar-cuerpo p
+{
+    margin: 0;
+    padding-top: 2px;
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--ink);
 }
 @media (max-width: 1000px)
 {

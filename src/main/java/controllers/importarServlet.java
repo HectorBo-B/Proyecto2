@@ -5,11 +5,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +83,23 @@ public class importarServlet extends HttpServlet
             procesar(request, response);
         }
     }
+	
 
+	private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("HH:mm:ss");
+
+	//marcacion de referencia: linea 0 = ya estaba en la base de datos
+	private static class Referencia
+	{
+	    final LocalDateTime hora;
+	    final int linea;
+
+	    Referencia(LocalDateTime hora, int linea)
+	    {
+	        this.hora = hora;
+	        this.linea = linea;
+	    }
+	}
+	
 	//---------------------------------------------------------------
 	// IMPORTAR: pasos 1 al 9
 	//---------------------------------------------------------------
@@ -290,44 +308,96 @@ public class importarServlet extends HttpServlet
     }
 
 	//paso 7: la primera aparicion se conserva y las repetidas se marcan como duplicadas
+	//paso 7: marcaciones repetidas por error (mismo empleado, mismo dia, muy seguidas).
+	//Las identicas (ya en la BD o repetidas en el archivo) se omiten sin mostrarse como duplicadas
 	private void marcarDuplicados(List<marcacion> lista) throws SQLException
-    {
-        if (lista.isEmpty())
-        {
-            return;
-        }
+	{
+	    if (lista.isEmpty())
+	    {
+	        return;
+	    }
 
-        LocalDateTime desde = lista.get(0).getFechaHora();
-        LocalDateTime hasta = desde;
+	    LocalDateTime desde = lista.get(0).getFechaHora();
+	    LocalDateTime hasta = desde;
 
-        for (marcacion m : lista)
-        {
-            if (m.getFechaHora().isBefore(desde)) {desde = m.getFechaHora();}
-            if (m.getFechaHora().isAfter(hasta)) {hasta = m.getFechaHora();}
-        }
+	    for (marcacion m : lista)
+	    {
+	        if (m.getFechaHora().isBefore(desde)) {desde = m.getFechaHora();}
+	        if (m.getFechaHora().isAfter(hasta)) {hasta = m.getFechaHora();}
+	    }
 
-        Set<String> enBaseDeDatos = marcDAO.clavesExistentes(desde.toLocalDate(), hasta.toLocalDate());
-        Map<String, Integer> vistas = new HashMap<>();
+	    Map<Integer, List<LocalDateTime>> enBaseDeDatos =
+	            marcDAO.marcacionesExistentes(desde.toLocalDate(), hasta.toLocalDate());
 
-        for (marcacion m : lista)
-        {
-            String clave = marcacionDAO.clave(m.getCodigo(), m.getFechaHora());
+	    //se procesa en orden cronologico por empleado: la primera marcacion se conserva
+	    List<marcacion> ordenadas = new ArrayList<>(lista);
+	    ordenadas.sort(Comparator.comparingInt(marcacion::getCodigo)
+	            .thenComparing(marcacion::getFechaHora)
+	            .thenComparingInt(marcacion::getNumeroLinea));
 
-            if (vistas.containsKey(clave))
-            {
-                m.marcar(marcacion.DUPLICADO,
-                    "Repetida en el archivo (primera vez en la línea " + vistas.get(clave) + ").");
-            }
-            else if (enBaseDeDatos.contains(clave))
-            {
-                m.marcar(marcacion.DUPLICADO, "Ya existe en la base de datos.");
-            }
-            else
-            {
-                vistas.put(clave, m.getNumeroLinea());
-            }
-        }
-    }
+	    Map<Integer, List<Referencia>> referencias = new HashMap<>();
+
+	    for (marcacion m : ordenadas)
+	    {
+	        List<Referencia> refs = referencias.get(m.getCodigo());
+
+	        if (refs == null)
+	        {
+	            refs = new ArrayList<>();
+
+	            List<LocalDateTime> guardadas = enBaseDeDatos.get(m.getCodigo());
+
+	            if (guardadas != null)
+	            {
+	                for (LocalDateTime hora : guardadas)
+	                {
+	                    refs.add(new Referencia(hora, 0));
+	                }
+	            }
+	            referencias.put(m.getCodigo(), refs);
+	        }
+
+	        LocalDateTime hora = m.getFechaHora();
+	        Referencia cercana = null;
+	        long menor = Long.MAX_VALUE;
+
+	        for (Referencia r : refs)
+	        {
+	            if (!r.hora.toLocalDate().equals(hora.toLocalDate()))
+	            {
+	                continue;
+	            }
+
+	            long diferencia = Math.abs(Duration.between(r.hora, hora).getSeconds());
+
+	            if (diferencia < menor)
+	            {
+	                menor = diferencia;
+	                cercana = r;
+	            }
+	        }
+
+	        String origen = cercana == null ? "" : (cercana.linea == 0
+	                ? "ya registrada en la base de datos"
+	                : "línea " + cercana.linea + " del archivo");
+
+	        if (cercana != null && menor == 0)
+	        {
+	            m.marcar(marcacion.OMITIDO, "Idéntica a una marcación existente (" + origen + ").");
+	        }
+	        else if (cercana != null && menor <= marcacionDAO.VENTANA_DUPLICADO_SEGUNDOS)
+	        {
+	        	m.marcar(marcacion.DUPLICADO,
+	        		    "Marcó " + menor + " segundo(s) " + (cercana.hora.isBefore(hora) ? "después" : "antes")
+	        		    + " de la marcación de las " + cercana.hora.format(FORMATO_HORA) + " (" + origen + "). "
+	        		    + "Se guarda, pero el reporte toma la primera.");
+	        }
+	        else
+	        {
+	            refs.add(new Referencia(hora, m.getNumeroLinea()));
+	        }
+	    }
+	}
 
 	//---------------------------------------------------------------
 	// GUARDAR: paso 10
@@ -344,7 +414,9 @@ public class importarServlet extends HttpServlet
             return;
         }
 
-        if (resultado.getCorrectos().isEmpty())
+        List<marcacion> guardables = resultado.getGuardables();
+
+        if (guardables.isEmpty())
         {
             error(request, response, "No hay registros válidos para guardar.");
             return;
@@ -353,7 +425,7 @@ public class importarServlet extends HttpServlet
         try
         {
             auditoriaDAO.registrarSeguro(sesion, "IMPORTACION", "Importó el archivo " + resultado.getNombreArchivo());
-            int guardadas = marcDAO.guardar(resultado.getCorrectos());
+            int guardadas = marcDAO.guardar(guardables);
 
             sesion.removeAttribute(SESION_RESULTADO);
             sesion.setAttribute(SESION_MENSAJE, "Se guardaron " + guardadas + " marcación(es) correctamente.");

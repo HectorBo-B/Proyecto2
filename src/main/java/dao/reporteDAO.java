@@ -116,11 +116,22 @@ public class reporteDAO
 
             try (ResultSet rs = ps.executeQuery())
             {
-                while (rs.next())
-                {
-                    marcas.computeIfAbsent(rs.getDate("FECHA").toLocalDate(), clave -> new ArrayList<>())
-                            .add(rs.getTime("HORA").toLocalTime());
-                }
+            	while (rs.next())
+            	{
+            	    LocalDate fecha = rs.getDate("FECHA").toLocalDate();
+            	    LocalTime hora = rs.getTime("HORA").toLocalTime();
+            	    List<LocalTime> delDia = marcas.computeIfAbsent(fecha, clave -> new ArrayList<>());
+
+            	    //marcacion repetida por error: queda en la BD, pero no cuenta en el reporte
+            	    if (!delDia.isEmpty()
+            	            && Duration.between(delDia.get(delDia.size() - 1), hora).getSeconds()
+            	               <= marcacionDAO.VENTANA_DUPLICADO_SEGUNDOS)
+            	    {
+            	        continue;
+            	    }
+
+            	    delDia.add(hora);
+            	}
             }
         }
         return marcas;

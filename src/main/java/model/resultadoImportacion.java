@@ -10,6 +10,7 @@ public class resultadoImportacion implements Serializable {
 
 	private String nombreArchivo;
 
+	private final List<marcacion> omitidos = new ArrayList<>();
 	private final List<marcacion> procesados = new ArrayList<>();
 	private final List<marcacion> correctos = new ArrayList<>();
 	private final List<marcacion> duplicados = new ArrayList<>();
@@ -29,9 +30,12 @@ public class resultadoImportacion implements Serializable {
 
 		if (marcacion.CORRECTO.equals(m.getEstado())) {correctos.add(m);}
 		else if (marcacion.DUPLICADO.equals(m.getEstado())) {duplicados.add(m);}
+		else if (marcacion.OMITIDO.equals(m.getEstado())) {omitidos.add(m);}
 		else if (marcacion.RECHAZADO.equals(m.getEstado())) {rechazados.add(m);}
 		else {errores.add(m);}
 	}
+
+	public List<marcacion> getOmitidos() {return omitidos;}
 
 	public List<marcacion> getProcesados() {return procesados;}
 	public List<marcacion> getCorrectos() {return correctos;}
@@ -40,8 +44,16 @@ public class resultadoImportacion implements Serializable {
 	public List<marcacion> getErrores() {return errores;}
 
 	//Hay algo que no se va a guardar
+	//Lo que se guarda en la BD: los correctos y los duplicados (el reporte se encarga de ignorar los repetidos)
+	public List<marcacion> getGuardables() {
+		List<marcacion> guardables = new ArrayList<>(correctos);
+		guardables.addAll(duplicados);
+		return guardables;
+	}
+
+	//Hay algo que no se va a guardar
 	public boolean hayIncidencias() {
-		return !duplicados.isEmpty() || !rechazados.isEmpty() || !errores.isEmpty();
+		return !rechazados.isEmpty() || !errores.isEmpty();
 	}
 
 	//Escapa texto para mostrarlo en HTML
@@ -52,4 +64,5 @@ public class resultadoImportacion implements Serializable {
 					.replace(">", "&gt;")
 					.replace("\"", "&quot;");
 	}
+	
 }
