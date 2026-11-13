@@ -91,14 +91,6 @@
                             <span class="stat-sub"><%= resumen.getUltimoArchivo().isEmpty() ? "Aún no se ha importado ningún archivo" : "Archivo: " + resultadoImportacion.escapar(resumen.getUltimoArchivo()) %></span>
                         </div>
                     </div>
-                    <div class="stat">
-                        <div class="stat-icon gray"><i class="fa-solid fa-calendar-days"></i></div>
-                        <div>
-                            <span class="stat-label">Periodo de los registros</span>
-                            <span class="stat-value"><%= resumen.getRangoTexto() %></span>
-                            <span class="stat-sub">rango usado para ausencias y tardanzas</span>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="card">
@@ -118,42 +110,6 @@
                                 <span>12:00 - 17:20</span>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-head">
-                        <h3>Últimos registros procesados</h3>
-                        <span class="counter">Últimos <%= resumen.getUltimos().size() %></span>
-                    </div>
-                    <div class="table-wrap">
-                        <table class="table" id="tblRegistros">
-                            <thead>
-                                <tr>
-                                    <th>Empleado</th>
-                                    <th>Código de marcación</th>
-                                    <th>Turno</th>
-                                    <th>Fecha</th>
-                                    <th>Hora</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <% for (dashboard.registro r : resumen.getUltimos()) { %>
-                                <tr>
-                                    <td><strong><%= resultadoImportacion.escapar(r.getNombre()) %></strong></td>
-                                    <td><%= r.getCodigo() %></td>
-                                    <td><%= r.getTurnoNombre() %></td>
-                                    <td><%= r.getFechaTexto() %></td>
-                                    <td><%= r.getHoraTexto() %></td>
-                                </tr>
-                                <% } %>
-                                <% if (resumen.getUltimos().isEmpty()) { %>
-                                <tr>
-                                    <td colspan="5" class="table-empty">Todavía no se han subido registros.</td>
-                                </tr>
-                                <% } %>
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </main>
