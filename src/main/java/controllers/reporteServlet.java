@@ -43,8 +43,9 @@ public class reporteServlet extends HttpServlet
         rq.setCharacterEncoding("UTF-8");
 
         String id = rq.getParameter("id");
+        boolean todos = rq.getParameter("todos") != null;
 
-        if (id == null || id.trim().isEmpty())
+        if (!todos && (id == null || id.trim().isEmpty()))
         {
             listado(rq, rsp);
             return;
@@ -52,23 +53,26 @@ public class reporteServlet extends HttpServlet
 
         try
         {
+            LocalDate desde = fecha(rq.getParameter("desde"), "La fecha inicial");
+            LocalDate hasta = fecha(rq.getParameter("hasta"), "La fecha final");
+
+            validarRango(desde, hasta);
+
+            rq.setAttribute("desde", desde.toString());
+            rq.setAttribute("hasta", hasta.toString());
+
+            if (todos)
+            {
+                rq.setAttribute("reportes", dao.generarTodos(desde, hasta));
+                rq.getRequestDispatcher(PAGINA_REPORTE).forward(rq, rsp);
+                return;
+            }
+
             empleado emp = dao.obtener(numero(id));
 
             if (emp == null)
             {
                 throw new IllegalArgumentException("El empleado no existe.");
-            }
-
-            LocalDate desde = fecha(rq.getParameter("desde"), "La fecha inicial");
-            LocalDate hasta = fecha(rq.getParameter("hasta"), "La fecha final");
-
-            if (hasta.isBefore(desde))
-            {
-                throw new IllegalArgumentException("La fecha final no puede ser anterior a la inicial.");
-            }
-            if (ChronoUnit.DAYS.between(desde, hasta) >= MAXIMO_DIAS)
-            {
-                throw new IllegalArgumentException("El rango no puede superar " + MAXIMO_DIAS + " días.");
             }
 
             rq.setAttribute("reporte", dao.generar(emp, desde, hasta));
@@ -184,6 +188,18 @@ public class reporteServlet extends HttpServlet
         }
 
         rsp.sendRedirect(rq.getContextPath() + "/reporteServlet?desde=" + desde + "&hasta=" + hasta);
+    }
+
+    private void validarRango(LocalDate desde, LocalDate hasta)
+    {
+        if (hasta.isBefore(desde))
+        {
+            throw new IllegalArgumentException("La fecha final no puede ser anterior a la inicial.");
+        }
+        if (ChronoUnit.DAYS.between(desde, hasta) >= MAXIMO_DIAS)
+        {
+            throw new IllegalArgumentException("El rango no puede superar " + MAXIMO_DIAS + " días.");
+        }
     }
 
     private void listado(HttpServletRequest rq, HttpServletResponse rsp) throws ServletException, IOException

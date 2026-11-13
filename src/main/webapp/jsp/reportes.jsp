@@ -40,16 +40,33 @@
             width: 42px;
             text-align: center;
         }
-        .pie-tabla
+        .main
+        {
+            padding-bottom: 100px;
+        }
+        .acciones-fijas
+        {
+            position: fixed;
+            right: 28px;
+            bottom: 24px;
+            z-index: 40;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 999px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow);
+        }
+        .seleccion-info
         {
             display: flex;
             align-items: center;
-            justify-content: flex-end;
-            gap: 14px;
+            gap: 12px;
             flex-wrap: wrap;
-            padding: 14px 16px;
         }
-        .pie-tabla .contador-seleccion
+        .contador-seleccion
         {
             font-size: 13px;
             opacity: 0.8;
@@ -179,6 +196,10 @@
                 <div class="card">
                     <div class="card-head">
                         <h3>Empleados encontrados</h3>
+                        <div class="seleccion-info">
+                            <span class="aviso-rojo" id="avisoSeleccion" hidden>Seleccione al menos un empleado.</span>
+                            <span class="contador-seleccion" id="contadorSeleccion">0 empleado(s) seleccionado(s)</span>
+                        </div>
                     </div>
 
                     <div class="table-wrap">
@@ -218,17 +239,18 @@
                             </tbody>
                         </table>
                     </div>
-
-                    <div class="pie-tabla">
-                        <span class="aviso-rojo" id="avisoSeleccion" hidden>Seleccione al menos un empleado.</span>
-                        <span class="contador-seleccion" id="contadorSeleccion">0 empleado(s) seleccionado(s)</span>
-                        <button type="button" class="btn btn-primary" id="btnObservaciones">
-                            <i class="fa-solid fa-comment-dots"></i> Observaciones
-                        </button>
-                    </div>
                 </div>
             </main>
         </div>
+    </div>
+
+    <div class="acciones-fijas no-print">
+        <button type="submit" class="btn btn-secondary" form="frmBuscar" name="todos" value="1" title="Ver la hoja de asistencia de todo el personal">
+            <i class="fa-solid fa-users"></i> Asistencia de todos
+        </button>
+        <button type="button" class="btn btn-primary" id="btnObservaciones">
+            <i class="fa-solid fa-comment-dots"></i> Observaciones
+        </button>
     </div>
 
     <dialog id="dlgObservacion">
@@ -521,6 +543,7 @@
                 if (marcados.length === 0)
                 {
                     avisoSeleccion.hidden = false;
+                    avisoSeleccion.scrollIntoView({behavior: 'smooth', block: 'center'});
                     return;
                 }
 

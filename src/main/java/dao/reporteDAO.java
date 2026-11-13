@@ -116,22 +116,22 @@ public class reporteDAO
 
             try (ResultSet rs = ps.executeQuery())
             {
-            	while (rs.next())
-            	{
-            	    LocalDate fecha = rs.getDate("FECHA").toLocalDate();
-            	    LocalTime hora = rs.getTime("HORA").toLocalTime();
-            	    List<LocalTime> delDia = marcas.computeIfAbsent(fecha, clave -> new ArrayList<>());
+                while (rs.next())
+                {
+                    LocalDate fecha = rs.getDate("FECHA").toLocalDate();
+                    LocalTime hora = rs.getTime("HORA").toLocalTime();
+                    List<LocalTime> delDia = marcas.computeIfAbsent(fecha, clave -> new ArrayList<>());
 
-            	    //marcacion repetida por error: queda en la BD, pero no cuenta en el reporte
-            	    if (!delDia.isEmpty()
-            	            && Duration.between(delDia.get(delDia.size() - 1), hora).getSeconds()
-            	               <= marcacionDAO.VENTANA_DUPLICADO_SEGUNDOS)
-            	    {
-            	        continue;
-            	    }
+                    //marcacion repetida por error: queda en la BD, pero no cuenta en el reporte
+                    if (!delDia.isEmpty()
+                            && Duration.between(delDia.get(delDia.size() - 1), hora).getSeconds()
+                               <= marcacionDAO.VENTANA_DUPLICADO_SEGUNDOS)
+                    {
+                        continue;
+                    }
 
-            	    delDia.add(hora);
-            	}
+                    delDia.add(hora);
+                }
             }
         }
         return marcas;
@@ -214,6 +214,17 @@ public class reporteDAO
             reporte.agregar(registro);
         }
         return reporte;
+    }
+
+    public List<reporteAsistencia> generarTodos(LocalDate desde, LocalDate hasta) throws SQLException
+    {
+        List<reporteAsistencia> reportes = new ArrayList<>();
+
+        for (empleado emp : buscar(""))
+        {
+            reportes.add(generar(emp, desde, hasta));
+        }
+        return reportes;
     }
 
     public void guardarObservaciones(List<Integer> ids, List<LocalDate> fechas, String texto) throws SQLException

@@ -1,22 +1,34 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="model.empleado, model.reporteAsistencia, model.resultadoImportacion" %>
+<%@ page import="java.util.Collections, java.util.List, model.empleado, model.reporteAsistencia, model.resultadoImportacion" %>
 <%
-    reporteAsistencia reporte = (reporteAsistencia) request.getAttribute("reporte");
+    @SuppressWarnings("unchecked")
+    List<reporteAsistencia> hojas = (List<reporteAsistencia>) request.getAttribute("reportes");
+    reporteAsistencia unica = (reporteAsistencia) request.getAttribute("reporte");
+    boolean varias = hojas != null;
 
-    if (reporte == null)
+    if (!varias && unica == null)
     {
         response.sendRedirect(request.getContextPath() + "/reporteServlet");
         return;
     }
 
-    empleado emp = reporte.getEmpleado();
+    if (!varias)
+    {
+        hojas = Collections.singletonList(unica);
+    }
+
+    String desde = (String) request.getAttribute("desde");
+    String hasta = (String) request.getAttribute("hasta");
+    String titulo = varias
+            ? "Asistencia de todo el personal"
+            : "Asistencia - " + resultadoImportacion.escapar(unica.getEmpleado().getNombre() + " " + unica.getEmpleado().getApellido());
 %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asistencia - <%= resultadoImportacion.escapar(emp.getNombre() + " " + emp.getApellido()) %></title>
+    <title><%= titulo %></title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="${pageContext.request.contextPath}/js/funciones.js" defer></script>
@@ -28,12 +40,44 @@
         }
         .barra-reporte
         {
+            position: sticky;
+            top: 0;
+            z-index: 5;
             max-width: 860px;
-            margin: 16px auto 0;
-            padding: 0 8px;
+            margin: 0 auto;
+            padding: 10px 8px;
             display: flex;
+            align-items: center;
             gap: 10px;
             flex-wrap: wrap;
+            background: #e5e7eb;
+        }
+        .barra-reporte select
+        {
+            width: auto;
+            min-width: 240px;
+        }
+        @media (min-width: 1400px)
+        {
+            .barra-reporte
+            {
+                position: fixed;
+                top: 16px;
+                left: 16px;
+                width: 220px;
+                max-width: none;
+                margin: 0;
+                padding: 0;
+                flex-direction: column;
+                align-items: stretch;
+                background: transparent;
+            }
+            .barra-reporte .btn,
+            .barra-reporte select
+            {
+                width: 100%;
+                min-width: 0;
+            }
         }
         .hoja
         {
@@ -144,20 +188,42 @@
             {
                 page-break-inside: avoid;
             }
+            .hoja + .hoja
+            {
+                break-before: page;
+                page-break-before: always;
+            }
         }
     </style>
 </head>
 <body class="vista-reporte">
     <div class="barra-reporte no-print">
-        <button type="button" class="btn btn-primary" data-imprimir>
-            <i class="fa-solid fa-print"></i> Imprimir
-        </button>
-        <a class="btn btn-secondary" href="${pageContext.request.contextPath}/reporteServlet?desde=<%= reporte.getDesde() %>&amp;hasta=<%= reporte.getHasta() %>">
+        <a class="btn btn-secondary" href="${pageContext.request.contextPath}/reporteServlet?desde=<%= desde %>&amp;hasta=<%= hasta %>">
             <i class="fa-solid fa-arrow-left"></i> Volver al listado
         </a>
+        <button type="button" class="btn btn-primary" data-imprimir>
+            <i class="fa-solid fa-print"></i> <%= varias ? "Imprimir todas" : "Imprimir" %>
+        </button>
+        <% if (varias && !hojas.isEmpty()) { %>
+        <select id="irEmpleado" class="input" aria-label="Ir a la hoja de un empleado">
+            <option value="">Ir a un empleado (<%= hojas.size() %> hojas)</option>
+            <% for (reporteAsistencia r : hojas) {
+                empleado e = r.getEmpleado(); %>
+            <option value="emp-<%= e.getEmpleadoID() %>"><%= resultadoImportacion.escapar(e.getNombre() + " " + e.getApellido()) %></option>
+            <% } %>
+        </select>
+        <% } %>
     </div>
 
+    <% if (hojas.isEmpty()) { %>
     <div class="hoja">
+        <p class="rango">No hay personal registrado.</p>
+    </div>
+    <% } %>
+
+    <% for (reporteAsistencia reporte : hojas) {
+        empleado emp = reporte.getEmpleado(); %>
+    <div class="hoja" id="emp-<%= emp.getEmpleadoID() %>">
         <h1>Empresa XYZ</h1>
         <p class="rango">Asistencia Desde <%= reporte.getDesdeTexto() %> Hasta <%= reporte.getHastaTexto() %></p>
 
@@ -166,7 +232,7 @@
             <p>Código de Marcación: <%= emp.getCodM() %></p>
         </div>
 
-        <table id="tblAsistencia">
+        <table class="tbl-asistencia">
             <colgroup>
                 <col style="width: 92px">
                 <col style="width: 56px">
@@ -210,5 +276,28 @@
             <p>Tiempo total de tardanzas: <%= reporte.getTiempoTardanzaTexto() %></p>
         </div>
     </div>
+    <% } %>
+
+    <script>
+        (function ()
+        {
+            var lista = document.getElementById('irEmpleado');
+
+            if (!lista)
+            {
+                return;
+            }
+            lista.addEventListener('change', function ()
+            {
+                var hoja = lista.value ? document.getElementById(lista.value) : null;
+
+                if (hoja)
+                {
+                    hoja.scrollIntoView({behavior: 'smooth', block: 'start'});
+                }
+                lista.value = '';
+            });
+        })();
+    </script>
 </body>
 </html>
