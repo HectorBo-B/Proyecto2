@@ -198,10 +198,11 @@ public class reporteDAO
 
             if (!registro.isFinDeSemana())
             {
-                boolean incompleto = registro.getEntrada() == null || registro.getSalida() == null;
+                //solo es ausencia si no marco nada: con entrada o salida (aunque falte la otra) cuenta como presente
+                boolean sinMarcas = registro.getEntrada() == null && registro.getSalida() == null;
                 boolean conObservacion = !registro.getObservacion().isEmpty();
 
-                if (incompleto && fecha.isBefore(hoy) && !conObservacion)
+                if (sinMarcas && fecha.isBefore(hoy) && !conObservacion)
                 {
                     registro.setAusente(true);
                 }
