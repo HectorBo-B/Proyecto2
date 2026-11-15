@@ -49,6 +49,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="${pageContext.request.contextPath}/js/funciones.js" defer></script>
+    <script src="${pageContext.request.contextPath}/js/validaciones.js" defer></script>
 </head>
 <body>
     <div class="app">
@@ -238,24 +239,24 @@
                 <div class="form-grid">
                     <div class="field">
                         <label class="required" for="nombreUsuario">Nombre</label>
-                        <input type="text" id="nombreUsuario" name="nombre" class="input" maxlength="100" required>
+                        <input type="text" id="nombreUsuario" name="nombre" class="input" maxlength="15" data-val="nombre" required>
                     </div>
                     <div class="field">
                         <label class="required" for="apellidoUsuario">Apellido</label>
-                        <input type="text" id="apellidoUsuario" name="apellido" class="input" maxlength="100" required>
+                        <input type="text" id="apellidoUsuario" name="apellido" class="input" maxlength="15" data-val="apellido" required>
                     </div>
                     <div class="field">
                         <label class="required" for="usuario">Usuario</label>
-                        <input type="text" id="usuario" name="usuario" class="input" maxlength="50" required>
+                        <input type="text" id="usuario" name="usuario" class="input" maxlength="30" data-val="usuario" autocomplete="off" required>
                     </div>
                     <div class="field">
                         <label class="required" for="correo">Correo</label>
-                        <input type="email" id="correo" name="correo" class="input" maxlength="100" required>
+                        <input type="text" id="correo" name="correo" class="input" maxlength="30" inputmode="email" spellcheck="false" data-val="correo" required>
                     </div>
                     <div class="field full">
                         <label for="clave">Contraseña</label>
                         <div class="password-wrap">
-                            <input type="password" id="clave" name="password" class="input" minlength="8" maxlength="100" data-requerido-creacion required>
+                            <input type="password" id="clave" name="password" class="input" maxlength="30" data-val="clave" data-requerido-creacion required>
                             <button type="button" class="toggle-pass" data-ver-clave aria-label="Mostrar contraseña">
                                 <i class="fa-solid fa-eye"></i>
                             </button>

@@ -34,6 +34,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="${pageContext.request.contextPath}/js/funciones.js" defer></script>
+    <script src="${pageContext.request.contextPath}/js/validaciones.js" defer></script>
     <style>
         .col-check
         {
@@ -176,7 +177,7 @@
                     <form id="frmBuscar" action="${pageContext.request.contextPath}/reporteServlet" method="get" class="toolbar" autocomplete="off">
                         <div class="field">
                             <label for="q">Buscar</label>
-                            <input type="text" id="q" name="q" class="input" value="<%= resultadoImportacion.escapar(texto) %>" placeholder="Cédula, nombre o código de marcación..." data-buscar="tblReportes" autofocus>
+                            <input type="text" id="q" name="q" class="input" value="<%= resultadoImportacion.escapar(texto) %>" placeholder="Cédula, nombre o código de marcación..." data-buscar="tblReportes" data-val="busqueda" autofocus>
                         </div>
                         <div class="field">
                             <label for="desde">Desde</label>

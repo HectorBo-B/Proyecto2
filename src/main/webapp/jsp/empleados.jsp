@@ -29,6 +29,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/estilos.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="${pageContext.request.contextPath}/js/funciones.js" defer></script>
+    <script src="${pageContext.request.contextPath}/js/validaciones.js" defer></script>
 </head>
 <body>
     <div class="app">
@@ -77,7 +78,7 @@
                     <div class="toolbar">
                         <div class="field">
                             <label for="buscar">Buscar</label>
-                            <input type="text" id="buscar" class="input" placeholder="Cédula, nombre o código de marcación..." data-buscar="tblPersonal">
+                            <input type="text" id="buscar" class="input" placeholder="Cédula, nombre o código de marcación..." data-buscar="tblPersonal" data-val="busqueda" autocomplete="off">
                         </div>
                         <div class="field">
                             <label for="filtroTurno">Turno</label>
@@ -164,15 +165,15 @@
                 <div class="form-grid">
                     <div class="field">
                         <label class="required" for="nombre">Nombre</label>
-                        <input type="text" id="nombre" name="nombre" class="input" placeholder="Escriba su Nombre" maxlength="100" required>
+                        <input type="text" id="nombre" name="nombre" class="input" placeholder="Escriba su Nombre" maxlength="15" data-val="nombre" required>
                     </div>
                     <div class="field">
                         <label class="required" for="apellido">Apellido</label>
-                        <input type="text" id="apellido" name="apellido" class="input" placeholder="Escriba su Apellido" maxlength="100" required>
+                        <input type="text" id="apellido" name="apellido" class="input" placeholder="Escriba su Apellido" maxlength="15" data-val="apellido" required>
                     </div>
                     <div class="field">
                         <label class="required" for="cedula">Cédula</label>
-                        <input type="text" id="cedula" name="cedula" class="input" placeholder="00-0000-000" maxlength="13" required>
+                        <input type="text" id="cedula" name="cedula" class="input" placeholder="00-0000-000" maxlength="13" data-val="cedula" required>
                     </div>
                     <div class="field">
                         <label class="required" for="turno">Turno</label>

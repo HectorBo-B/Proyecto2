@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.empleado.codigoMarcacion;
 import model.empleado;
+import model.validaciones;
 
 @WebServlet("/empServlet")
 public class empleadoServlet extends HttpServlet {
@@ -89,9 +90,9 @@ public class empleadoServlet extends HttpServlet {
 
 		int id = editar ? numero(rq.getParameter("idEMP"), "El empleado no es válido.") : 0;
 
-		String nombre = texto(rq.getParameter("nombre"), 100, "El nombre");
-		String apellido = texto(rq.getParameter("apellido"), 100, "El apellido");
-		String cedula = texto(rq.getParameter("cedula"), 13, "La cédula");
+		String nombre = validaciones.nombre(rq.getParameter("nombre"));
+		String apellido = validaciones.apellido(rq.getParameter("apellido"));
+		String cedula = validaciones.cedula(rq.getParameter("cedula"));
 		String turno = rq.getParameter("turno");
 		String codigoTexto = rq.getParameter("codMarc") == null ? "" : rq.getParameter("codMarc").trim();
 
