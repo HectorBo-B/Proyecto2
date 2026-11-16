@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%-- Página inicial: muestra la aplicación dentro de dos marcos y recuerda la última página visitada --%>
 <!DOCTYPE html>
 <html lang="es">
 <head>
