@@ -13,6 +13,7 @@ import config.Conexion;
 import model.empleado.codigoMarcacion;
 import model.empleado;
 
+//Acceso a la tabla personal y a los códigos de marcación
 public class empleadoDAO {
 
 	private static final String COLUMNAS =

@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpSession;
 import model.auditoria;
 import model.usuario;
 
+//Acceso a la tabla de auditoría (base de datos de seguridad)
 public class auditoriaDAO {
 
 	//Guarda un registro de auditoría

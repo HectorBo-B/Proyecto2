@@ -14,6 +14,7 @@ import model.dashboard;
 import model.empleado;
 import model.reporteAsistencia;
 
+//Consultas del dashboard: totales, últimas marcaciones y última importación
 public class dashboardDAO
 {
     private static final int ULTIMOS = 10;
@@ -21,6 +22,7 @@ public class dashboardDAO
 
     private final reporteDAO reportes = new reporteDAO();
 
+    //Arma el resumen sumando ausencias y tardanzas de todos los empleados en el rango registrado
     public dashboard obtener() throws SQLException
     {
         dashboard resumen = new dashboard();
@@ -44,6 +46,7 @@ public class dashboardDAO
         return resumen;
     }
 
+    //Cantidad de registros y rango de fechas cargado
     private void cargarRegistros(dashboard resumen) throws SQLException
     {
         String sql = "SELECT COUNT(*), MIN(FECHA), MAX(FECHA) FROM registros_asistencia";
@@ -65,6 +68,7 @@ public class dashboardDAO
         }
     }
 
+    //Últimas marcaciones guardadas con el nombre del empleado
     private void cargarUltimos(dashboard resumen) throws SQLException
     {
         String sql = "SELECT r.CODIGO_MARCACION, r.FECHA, r.HORA, p.NOMBRE, p.APELLIDO, p.TURNO "
@@ -86,6 +90,7 @@ public class dashboardDAO
         }
     }
 
+    //Última importación según la auditoría
     private void cargarUltimoProceso(dashboard resumen) throws SQLException
     {
         String sql = "SELECT FECHA, DESCRIPCION FROM auditoria_acceso WHERE ACCION = ? "

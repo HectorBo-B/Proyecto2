@@ -18,11 +18,13 @@ import model.empleado;
 import model.feriados;
 import model.reporteAsistencia;
 
+//Genera los reportes de asistencia: entradas, salidas, ausencias, tardanzas y observaciones
 public class reporteDAO
 {
     private static final String COLUMNAS =
             "ID_PERSONAL, CEDULA, NOMBRE, APELLIDO, CODIGO_MARCACION, TURNO, ESTADO, FECHA_REGISTRO";
 
+    //horarios de cada turno (la tarde termina a las 17:20)
     private static final LocalTime INICIO_MANANA = LocalTime.of(6, 0);
     private static final LocalTime FIN_MANANA = LocalTime.of(12, 0);
     private static final LocalTime INICIO_TARDE = LocalTime.of(12, 0);
@@ -42,6 +44,7 @@ public class reporteDAO
         return emp;
     }
 
+    //Busca empleados por texto (vacío = todos)
     public List<empleado> buscar(String texto) throws SQLException
     {
         boolean filtra = texto != null && !texto.isEmpty();
@@ -80,6 +83,7 @@ public class reporteDAO
         return lista;
     }
 
+    //Busca un empleado por su ID, o null si no existe
     public empleado obtener(int id) throws SQLException
     {
         try (Connection con = Conexion.getConexion();
@@ -94,6 +98,7 @@ public class reporteDAO
         }
     }
 
+    //Hora de entrada y de salida según el turno
     private LocalTime[] horario(String turno)
     {
         return "T".equals(turno)
@@ -101,6 +106,7 @@ public class reporteDAO
                 : new LocalTime[] {INICIO_MANANA, FIN_MANANA};
     }
 
+    //Marcaciones del empleado agrupadas por día
     private Map<LocalDate, List<LocalTime>> marcaciones(int codigo, LocalDate desde, LocalDate hasta) throws SQLException
     {
         String sql = "SELECT FECHA, HORA FROM registros_asistencia "
@@ -138,6 +144,7 @@ public class reporteDAO
         return marcas;
     }
 
+    //Observaciones escritas a mano por día
     private Map<LocalDate, String> observaciones(int idPersonal, LocalDate desde, LocalDate hasta) throws SQLException
     {
         String sql = "SELECT FECHA, OBSERVACION FROM observaciones_asistencia "
@@ -194,11 +201,13 @@ public class reporteDAO
         return libres;
     }
 
+    //Reporte de un empleado en el rango de fechas
     public reporteAsistencia generar(empleado emp, LocalDate desde, LocalDate hasta) throws SQLException
     {
         return generar(emp, desde, hasta, diasLibres(desde, hasta));
     }
 
+    //Primera marca = entrada, última = salida; calcula ausencia o tardanza de cada día
     public reporteAsistencia generar(empleado emp, LocalDate desde, LocalDate hasta, Map<LocalDate, String> libres) throws SQLException
     {
         LocalTime[] horario = horario(emp.getTurno());
@@ -262,6 +271,7 @@ public class reporteDAO
         return reporte;
     }
 
+    //Reporte de todos los empleados
     public List<reporteAsistencia> generarTodos(LocalDate desde, LocalDate hasta) throws SQLException
     {
         List<reporteAsistencia> reportes = new ArrayList<>();
@@ -274,6 +284,7 @@ public class reporteDAO
         return reportes;
     }
 
+    //Guarda (o borra si el texto va vacío) la observación en una sola transacción
     public void guardarObservaciones(List<Integer> ids, List<LocalDate> fechas, String texto) throws SQLException
     {
         String sql = texto.isEmpty()

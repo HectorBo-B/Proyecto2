@@ -10,6 +10,7 @@ import java.util.List;
 import config.ConexionS;
 import model.usuario;
 
+//Acceso a la tabla de usuarios (base de datos de seguridad)
 public class usuarioDAO {
 
 	private static final String COLUMNAS =

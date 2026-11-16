@@ -20,6 +20,7 @@ import java.util.Set;
 import config.Conexion;
 import model.marcacion;
 
+//Acceso a la tabla registros_asistencia (marcaciones del reloj)
 public class marcacionDAO {
 
 	//dos marcaciones del mismo empleado y dia con esta diferencia (o menos) se consideran repetidas por error
