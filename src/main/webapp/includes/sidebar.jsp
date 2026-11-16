@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="model.usuario" %>
+<%-- Menú lateral común: marca el enlace activo y muestra "Usuarios y acceso" solo al administrador --%>
 <%
     String uri = request.getRequestURI().toLowerCase();
     usuario sesionActual = (usuario) session.getAttribute(usuario.SESION);

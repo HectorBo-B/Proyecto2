@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" import="java.util.List, model.marcacion, model.resultadoImportacion" %>
+<%-- Tabla reutilizable de marcaciones para los diálogos de la importación --%>
 <%
     @SuppressWarnings("unchecked")
     List<marcacion> lista = (List<marcacion>) request.getAttribute("listaMarcaciones");
