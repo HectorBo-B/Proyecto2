@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+//Conexión a la base de datos de asistencia (proy2_asistencia)
 public class Conexion {
 	
 	//URL, Usuario y contraseña
@@ -14,6 +15,7 @@ public class Conexion {
 	
 	private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
 	
+	//Devuelve una conexión nueva; quien la pide debe cerrarla
 	public static Connection getConexion() throws SQLException{
 		
 		//carga el driver de MySQL; si falla, el jar no esta en WEB-INF/lib

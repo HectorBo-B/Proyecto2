@@ -9,6 +9,7 @@ import java.util.Base64;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
+//Cifrado y verificación de contraseñas
 public class Seguridad {
 
 	private static final String ALGORITMO = "PBKDF2WithHmacSHA256";
@@ -17,7 +18,7 @@ public class Seguridad {
 	private static final int BITS_CLAVE = 256;
 	private static final int BYTES_SAL = 16;
 
-	//Convierte la contraseña en un texto cifrado: PBKDF2$iteraciones$sal$hash
+	//Convierte la contraseña en un texto cifrado
 	public static String cifrar(String clave) {
 
 		byte[] sal = new byte[BYTES_SAL];
@@ -52,6 +53,7 @@ public class Seguridad {
 		}
 	}
 
+	//Genera el hash de la contraseña con la sal y las iteraciones indicadas
 	private static byte[] derivar(String clave, byte[] sal, int iteraciones) {
 
 		try {
