@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
+//Usuario del sistema (rol ADMIN u OPERADOR)
 public class usuario implements Serializable {
 
 	private static final long serialVersionUID = 1L;

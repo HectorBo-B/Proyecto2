@@ -3,6 +3,7 @@ package model;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
+//Empleado (tabla personal)
 public class empleado {
 
 	private int id_empleado;

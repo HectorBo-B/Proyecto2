@@ -3,6 +3,7 @@ package model;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
+//Registro de auditoría: quién hizo qué y cuándo
 public class auditoria {
 
 	public static final String LOGIN = "LOGIN";

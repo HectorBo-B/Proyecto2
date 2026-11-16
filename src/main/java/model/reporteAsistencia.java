@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+//Reporte de asistencia de un empleado: lista de días, ausencias y tardanzas
 public class reporteAsistencia
 {
     private static final DateTimeFormatter FECHA_TEXTO = DateTimeFormatter.ofPattern("dd-MM-yyyy");
@@ -71,6 +72,7 @@ public class reporteAsistencia
 
     public String getTiempoTardanzaTexto() {return duracion(segundosTardanza);}
 
+    //Un día del reporte con entrada, salida, observación y tardanza
     public static class dia
     {
         private final LocalDate fecha;

@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+//Datos que muestra el dashboard
 public class dashboard
 {
     private static final DateTimeFormatter FECHA_TEXTO = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -78,6 +79,7 @@ public class dashboard
 
     public List<registro> getUltimos() {return ultimos;}
 
+    //Una marcación reciente para la tabla del dashboard
     public static class registro
     {
         private final String nombre, turno;

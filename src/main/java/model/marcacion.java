@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+//Una línea del archivo importado con su estado de validación
 public class marcacion implements Serializable {
 
 	private static final long serialVersionUID = 1L;
