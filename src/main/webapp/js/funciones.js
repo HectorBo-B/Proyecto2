@@ -1,6 +1,7 @@
 (function() {
     'use strict';
 
+    //Funciones generales de la interfaz: menú, tablas, diálogos, importación y avisos
     var EXTENSIONES_PERMITIDAS = ['dat', 'txt'];
     var CLAVE_MENU = 'asistencia-menu-oculto';
     var TEXTO_ARCHIVO_VACIO = 'Formatos permitidos: .dat, .txt';
@@ -10,6 +11,7 @@
     var rolActual = '';
     var dialogoConfirmacion = null;
 
+    //Menú lateral: recuerda si estaba oculto
     function leerPreferenciaMenu() {
         try {
             return window.localStorage.getItem(CLAVE_MENU) === '1';
@@ -28,6 +30,7 @@
         }
     }
 
+    //Aviso temporal en pantalla
     function mostrarNotificacion(mensaje) {
         var notificacion = document.createElement('div');
         notificacion.className = 'toast';
@@ -45,6 +48,7 @@
         }, 2800);
     }
 
+    //Diálogo de confirmación (eliminar, activar/desactivar)
     function obtenerDialogoConfirmacion()
     {
         var dialogo = null;
@@ -113,6 +117,7 @@
         (peligro ? botonCancelar : botonAceptar).focus();
     }
 
+    //Cierra el menú lateral
     function cerrarMenu() {
         var lateral = document.getElementById('sidebar');
         if (lateral) {
@@ -152,6 +157,7 @@
         return campo.name.toLowerCase();
     }
 
+    //Manejo de las tablas del CRUD
     function filasDe(tabla) {
         return Array.prototype.slice.call(tabla.querySelectorAll('tbody tr:not(.fila-vacia)'));
     }
@@ -244,6 +250,7 @@
         }
     }
 
+    //Abre el formulario en modo nuevo o edición
     function abrirDialogo(dialogo, fila, titulo) {
         var formulario = dialogo.querySelector('form');
         var encabezado = dialogo.querySelector('[data-titulo-dialogo]');
@@ -313,6 +320,7 @@
         });
     }
 
+    //Carga los códigos de marcación libres según el turno
     function cargarCodigos(dialogo, fila, turno) {
         var selector = dialogo.querySelector('#codMarc');
         var idEmpleado = fila ? parseInt(fila.dataset.idemp, 10) : 0;
@@ -369,6 +377,7 @@
         formulario.submit();
     }
 
+    //Guarda los datos de un formulario en la tabla
     function guardarFila(tabla, dialogo, formulario) {
         var fila = dialogo.filaEdicion;
         var filas = filasDe(tabla);
@@ -435,6 +444,7 @@
         return true;
     }
 
+    //Filtra la tabla por texto, selectores y pestañas, y actualiza el contador
     function filtrarTabla(tabla) {
         var consulta = '';
         var visibles = 0;
@@ -490,6 +500,7 @@
         }
     }
 
+	//Importación: muestra el archivo elegido y valida su extensión
 	function mostrarNombreArchivo(archivo, etiqueta, zona) {
 	    if (!etiqueta) {
 	        return;
@@ -532,6 +543,7 @@
         return partes.length > 1 && EXTENSIONES_PERMITIDAS.indexOf(partes[partes.length - 1]) !== -1;
     }
 
+    //Importación: valida el archivo elegido y envía el formulario
     function iniciarImportacion() {
         var entrada = document.getElementById('archivo');
         var etiqueta = document.getElementById('nombreArchivo');
@@ -596,6 +608,7 @@
         }
     }
 
+    //Importación: botón para guardar las marcaciones válidas
     function iniciarGuardado()
     {
         var formulario = document.getElementById('frmGuardar');
@@ -638,6 +651,7 @@
         });
     }
 
+    //Rango de fechas del reporte
     function iniciarRangoFechas() {
         var desde = document.getElementById('desde');
         var hasta = document.getElementById('hasta');
@@ -660,6 +674,7 @@
         }
     }
 
+    //Permisos por rol
     function mostrarPermisos(tabla, rol) {
         rolActual = rol;
         tabla.querySelectorAll('input[type="checkbox"]').forEach(function(casilla) {
@@ -688,6 +703,7 @@
         mostrarPermisos(tabla, botones[0].getAttribute('data-permisos-rol'));
     }
 
+    //Inicialización al cargar la página
     function iniciar() {
         aplicarPreferenciaMenu();
         if (consultaMovil.addEventListener) {
@@ -712,6 +728,7 @@
         iniciarPermisos();
     }
 
+    //Menú lateral: botón para mostrar/ocultar y cierre al hacer clic fuera
     document.addEventListener('click', function(evento) {
         var lateral = document.getElementById('sidebar');
         if (!lateral) {
@@ -739,6 +756,7 @@
         }
     });
 
+    //Abre el diálogo indicado por el botón (nuevo registro)
     document.addEventListener('click', function(evento) {
         var boton = evento.target.closest('[data-abrir]');
         var dialogo = boton ? document.getElementById(boton.getAttribute('data-abrir')) : null;
@@ -747,6 +765,7 @@
         }
     });
 
+    //Botones de cada fila de la tabla (editar, estado, eliminar)
     document.addEventListener('click', function(evento) {
         var boton = evento.target.closest('[data-accion]');
         var fila = boton ? boton.closest('tr') : null;
@@ -818,6 +837,7 @@
         }
     });
 
+    //Al cambiar el turno se recargan los códigos de marcación disponibles
     document.addEventListener('change', function(evento) {
         var dialogo = document.getElementById('dlgPersonal');
 
@@ -840,6 +860,7 @@
         }
     });
 
+    //Búsqueda en vivo sobre la tabla
     document.addEventListener('input', function(evento) {
         if (evento.target.matches('[data-buscar]')) {
             filtrarTabla(document.getElementById(evento.target.getAttribute('data-buscar')));
@@ -849,6 +870,7 @@
         }
     });
 
+    //Filtros por selector y casillas de permisos
     document.addEventListener('change', function(evento) {
         if (evento.target.matches('select[data-filtro-select]')) {
             filtrarTabla(document.getElementById(evento.target.getAttribute('data-filtro-select')));
@@ -862,6 +884,7 @@
         }
     });
 
+    //Pestañas de filtro de la tabla
     document.addEventListener('click', function(evento) {
         var boton = evento.target.closest('[data-filtro-de]');
         var tabla = boton ? boton.getAttribute('data-filtro-de') : '';
@@ -878,6 +901,7 @@
         filtrarTabla(document.getElementById(tabla));
     });
 
+    //Botón Limpiar: borra la búsqueda y los filtros
     document.addEventListener('click', function(evento) {
         var boton = evento.target.closest('[data-limpiar]');
         var tabla = boton ? boton.getAttribute('data-limpiar') : '';
@@ -897,6 +921,7 @@
         filtrarTabla(document.getElementById(tabla));
     });
 
+    //Pestañas que muestran un panel u otro
     document.addEventListener('click', function(evento) {
         var boton = evento.target.closest('[data-panel]');
         var grupo = boton ? boton.getAttribute('data-grupo') : '';
@@ -921,6 +946,7 @@
         }
     });
 
+    //Mostrar u ocultar la contraseña
     document.addEventListener('click', function(evento) {
         var boton = evento.target.closest('[data-ver-clave]');
         var campo = boton ? boton.parentElement.querySelector('input') : null;
@@ -938,12 +964,14 @@
         }
     });
 
+    //Botón Imprimir
     document.addEventListener('click', function(evento) {
         if (evento.target.closest('[data-imprimir]')) {
             window.print();
         }
     });
 
+    //Los formularios con data-demo solo actualizan la tabla, sin enviarse al servidor
     document.addEventListener('submit', function(evento) {
         var formulario = evento.target;
         var dialogo = formulario.closest('dialog');

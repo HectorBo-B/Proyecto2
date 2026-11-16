@@ -1,5 +1,6 @@
 (function ()
 {
+    //Validación de formularios en el navegador (mismas reglas que model/validaciones.java)
     'use strict';
 
     var RE_NOMBRE = /^\p{L}+$/u;
@@ -204,6 +205,7 @@
         }
     };
 
+    //Elige la regla de validación según el campo
     function reglaDe(campo)
     {
         var tipo = campo && campo.getAttribute ? campo.getAttribute('data-val') : null;
@@ -250,6 +252,7 @@
         return campo.cajaError;
     }
 
+    //Muestra u oculta el mensaje de error del campo
     function pintar(campo, mensaje, mostrar)
     {
         var ver = mostrar && mensaje !== '';
@@ -318,6 +321,7 @@
         }
     }
 
+    //Revisa todos los campos antes de enviar el formulario
     function revisarFormulario(formulario)
     {
         Array.prototype.forEach.call(formulario.elements, function (campo)
