@@ -32,8 +32,10 @@ import model.empleado;
 import model.marcacion;
 import model.resultadoImportacion;
 
+//Importa marcaciones desde un archivo .dat/.txt: valida, muestra el resumen y guarda al confirmar
 @WebServlet("/ImportarServlet")
 @MultipartConfig(
+    //tamaño máximo del archivo: 5 MB
     maxFileSize = 5 * 1024 * 1024,
     maxRequestSize = 6 * 1024 * 1024
 )
@@ -43,6 +45,7 @@ public class importarServlet extends HttpServlet
 	private static final long serialVersionUID = 1L;
 
 	private static final String PAGINA = "/jsp/importar.jsp";
+	//el resultado queda en la sesión hasta que el usuario confirme o cancele
 	private static final String SESION_RESULTADO = "resultadoImportacion";
 	private static final String SESION_MENSAJE = "mensajeImportacion";
 
@@ -50,6 +53,7 @@ public class importarServlet extends HttpServlet
 	private static final DateTimeFormatter FORMATO_FECHA =
 			DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss").withResolverStyle(ResolverStyle.STRICT);
 
+	//columnas que debe tener cada línea del archivo
 	private static final int COLUMNAS = 6;
 
 	private final empleadoDAO empDAO = new empleadoDAO();
@@ -62,6 +66,7 @@ public class importarServlet extends HttpServlet
         response.sendRedirect(request.getContextPath() + PAGINA);
     }
 
+	//Según la acción: guardar, cancelar o procesar el archivo (por defecto)
 	@Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException

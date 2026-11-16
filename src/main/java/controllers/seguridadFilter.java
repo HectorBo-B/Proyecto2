@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.usuario;
 
+//Protege todas las rutas: exige sesión y limita usuarios/auditoría al administrador
 @WebFilter("/*")
 public class seguridadFilter implements Filter
 {
@@ -60,6 +61,7 @@ public class seguridadFilter implements Filter
         chain.doFilter(request, response);
     }
 
+    //Rutas que se pueden abrir sin iniciar sesión
     private boolean esPublica(String ruta)
     {
         return ruta.isEmpty() || "/".equals(ruta) || "/index.jsp".equals(ruta)
@@ -68,6 +70,7 @@ public class seguridadFilter implements Filter
                 || ruta.startsWith("/css/") || ruta.startsWith("/js/");
     }
 
+    //Rutas exclusivas del administrador
     private boolean soloAdministrador(String ruta)
     {
         return "/jsp/usuarios.jsp".equals(ruta) || "/usuarioservlet".equals(ruta);

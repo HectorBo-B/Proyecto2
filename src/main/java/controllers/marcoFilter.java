@@ -11,6 +11,7 @@ import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+//La app se muestra dentro de los marcos de index.jsp: si una página se abre directo, redirige a la raíz
 @WebFilter("/*")
 public class marcoFilter implements Filter
 {

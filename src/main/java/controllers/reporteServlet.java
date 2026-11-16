@@ -21,6 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.empleado;
 
+//Reportes de asistencia: listado de empleados, reporte individual o de todos, y observaciones
 @WebServlet("/reporteServlet")
 public class reporteServlet extends HttpServlet
 {
@@ -30,13 +31,16 @@ public class reporteServlet extends HttpServlet
     private static final String PAGINA_REPORTE = "/jsp/reporteAsistencia.jsp";
     private static final String SESION_OK = "mensajeReporteOk";
     private static final String SESION_ERROR = "mensajeReporteError";
+    //rango máximo de fechas que se puede consultar
     private static final int MAXIMO_DIAS = 366;
+    //observaciones predefinidas; "Otro" permite texto libre y "Quitar" borra la observación
     private static final List<String> OBSERVACIONES = Arrays.asList("Vacaciones", "Incapacidad", "Capacitación", "Permiso", "Misión oficial");
     private static final String OTRO = "Otro";
     private static final String QUITAR = "Quitar";
 
     private final reporteDAO dao = new reporteDAO();
 
+    //Sin empleado muestra el listado; con empleado (o todos) genera el reporte del rango
     @Override
     protected void doGet(HttpServletRequest rq, HttpServletResponse rsp) throws ServletException, IOException
     {
@@ -91,6 +95,7 @@ public class reporteServlet extends HttpServlet
         }
     }
 
+    //Guarda o quita una observación en los días y empleados marcados, y vuelve al listado
     @Override
     protected void doPost(HttpServletRequest rq, HttpServletResponse rsp) throws ServletException, IOException
     {
@@ -190,6 +195,7 @@ public class reporteServlet extends HttpServlet
         rsp.sendRedirect(rq.getContextPath() + "/reporteServlet?desde=" + desde + "&hasta=" + hasta);
     }
 
+    //El rango no puede estar invertido, ser futuro ni superar el máximo de días
     private void validarRango(LocalDate desde, LocalDate hasta)
     {
         if (hasta.isBefore(desde))
@@ -206,6 +212,7 @@ public class reporteServlet extends HttpServlet
         }
     }
 
+    //Muestra el buscador de empleados con las fechas elegidas
     private void listado(HttpServletRequest rq, HttpServletResponse rsp) throws ServletException, IOException
     {
         String texto = rq.getParameter("q") == null ? "" : rq.getParameter("q").trim();
@@ -227,6 +234,7 @@ public class reporteServlet extends HttpServlet
         rq.getRequestDispatcher(PAGINA_LISTADO).forward(rq, rsp);
     }
 
+    //Devuelve la fecha como texto o vacío si no es válida
     private String valorFecha(String valor)
     {
         try
@@ -239,6 +247,7 @@ public class reporteServlet extends HttpServlet
         }
     }
 
+    //Convierte el texto a fecha o lanza el mensaje de error
     private LocalDate fecha(String valor, String campo)
     {
         try
@@ -251,6 +260,7 @@ public class reporteServlet extends HttpServlet
         }
     }
 
+    //Convierte el id a entero o lanza el mensaje de error
     private int numero(String valor)
     {
         try

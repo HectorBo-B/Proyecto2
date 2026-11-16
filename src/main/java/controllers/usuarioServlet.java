@@ -18,6 +18,7 @@ import jakarta.servlet.http.HttpSession;
 import model.auditoria;
 import model.usuario;
 
+//Gestión de usuarios y auditoría (solo administrador)
 @WebServlet("/usuarioServlet")
 public class usuarioServlet extends HttpServlet {
 
@@ -28,6 +29,7 @@ public class usuarioServlet extends HttpServlet {
 	private static final String SESION_ERROR = "mensajeUsuarioError";
 	private static final int LIMITE_AUDITORIA = 500;
 
+	//formatos permitidos para el nombre de usuario y el correo
 	private static final Pattern PATRON_USUARIO = Pattern.compile("[A-Za-z0-9._-]{3,50}");
 	private static final Pattern PATRON_CORREO = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
 
@@ -171,6 +173,7 @@ public class usuarioServlet extends HttpServlet {
 		return "Usuario registrado correctamente.";
 	}
 
+	//Activa o desactiva un usuario (el administrador no se puede desactivar)
 	private void cambiarEstado(HttpServletRequest rq) throws SQLException {
 
 		usuario u = dao.buscarPorId(numero(rq.getParameter("idUsuario"), "El usuario no es válido."));
@@ -185,6 +188,7 @@ public class usuarioServlet extends HttpServlet {
 		dao.alternarEstado(u.getId());
 	}
 
+	//Elimina un usuario si no es administrador y no tiene actividad en la auditoría
 	private void eliminar(HttpServletRequest rq) throws SQLException {
 
 		usuario u = dao.buscarPorId(numero(rq.getParameter("idUsuario"), "El usuario no es válido."));
@@ -219,6 +223,7 @@ public class usuarioServlet extends HttpServlet {
 		return true;
 	}
 
+	//Usuario que tiene la sesión abierta
 	private usuario actual(HttpServletRequest rq) {
 		HttpSession sesion = rq.getSession(false);
 		return sesion == null ? null : (usuario) sesion.getAttribute(usuario.SESION);

@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpSession;
 import model.auditoria;
 import model.usuario;
 
+//Inicio de sesión: valida usuario y contraseña y crea la sesión
 @WebServlet("/loginServlet")
 public class loginServlet extends HttpServlet {
 
@@ -30,6 +31,7 @@ public class loginServlet extends HttpServlet {
 		rsp.sendRedirect(rq.getContextPath() + LOGIN);
 	}
 
+	//Valida las credenciales y abre una sesión nueva
 	@Override
 	protected void doPost(HttpServletRequest rq, HttpServletResponse rsp) throws ServletException, IOException {
 
@@ -55,6 +57,7 @@ public class loginServlet extends HttpServlet {
 				return;
 			}
 
+			//la contraseña cifrada no se guarda en la sesión
 			u.setClave(null);
 
 			//sesión nueva para evitar la fijación de sesión
@@ -77,6 +80,7 @@ public class loginServlet extends HttpServlet {
 		}
 	}
 
+	//Vuelve al login mostrando el mensaje de error
 	private void mostrarError(HttpServletRequest rq, HttpServletResponse rsp, String mensaje)
 			throws ServletException, IOException {
 

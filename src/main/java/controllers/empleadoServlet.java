@@ -17,6 +17,7 @@ import model.empleado.codigoMarcacion;
 import model.empleado;
 import model.validaciones;
 
+//Gestión de empleados: listar, crear, editar y activar/desactivar
 @WebServlet("/empServlet")
 public class empleadoServlet extends HttpServlet {
 
@@ -153,6 +154,7 @@ public class empleadoServlet extends HttpServlet {
 		return limpio;
 	}
 
+	//Convierte a entero o lanza el mensaje de error indicado
 	private int numero(String valor, String mensaje) {
 
 		try {
@@ -163,6 +165,7 @@ public class empleadoServlet extends HttpServlet {
 		}
 	}
 
+	//Nombre del turno: M = Mañana, T = Tarde
 	private String nombreTurno(String turno) {
 		return "M".equals(turno) ? "Mañana" : "Tarde";
 	}

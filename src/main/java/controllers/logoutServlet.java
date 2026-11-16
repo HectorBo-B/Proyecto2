@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.auditoria;
 
+//Cierra la sesión del usuario, lo registra en auditoría y vuelve al login
 @WebServlet("/logoutServlet")
 public class logoutServlet extends HttpServlet {
 

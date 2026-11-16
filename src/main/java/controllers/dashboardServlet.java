@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.dashboard;
 
+//Carga el resumen del dashboard (empleados, ausencias, tardanzas y últimas marcaciones)
 @WebServlet("/dashboardServlet")
 public class dashboardServlet extends HttpServlet
 {
