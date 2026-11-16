@@ -10,6 +10,7 @@
     <script src="${pageContext.request.contextPath}/js/funciones.js" defer></script>
 </head>
 <body class="login-body">
+    <%-- Panel informativo --%>
     <section class="login-aside">
         <div class="login-brand">
             <span><i class="fa-solid fa-clipboard-user"></i></span>
@@ -34,6 +35,7 @@
                 <span>${error}</span>
             </div>
 
+            <%-- Formulario de inicio de sesión --%>
             <form action="${pageContext.request.contextPath}/loginServlet" method="post" autocomplete="off">
 				<div class="field">
 					<label for="usuario">Usuario</label> <input type="text"

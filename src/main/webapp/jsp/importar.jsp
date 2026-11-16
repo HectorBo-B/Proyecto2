@@ -56,6 +56,7 @@
                 <div class="card">
                     <h3>Seleccionar archivo</h3>
                     <form action="${pageContext.request.contextPath}/ImportarServlet?accion=procesar" method="post" enctype="multipart/form-data">
+                        <%-- Zona para elegir o arrastrar el archivo .dat/.txt --%>
                         <label class="dropzone" for="archivo">
                             <i class="fa-solid fa-cloud-arrow-up"></i>
                             <strong>Haga clic o arrastre un archivo aquí</strong>
@@ -145,11 +146,13 @@
 					</p>
 					<% } %>
                     <div class="form-actions">
+                        <%-- Descarta la importación pendiente --%>
                         <form action="${pageContext.request.contextPath}/ImportarServlet?accion=cancelar" method="post">
                             <button type="submit" class="btn btn-secondary">
                                 <i class="fa-solid fa-xmark"></i> Cancelar
                             </button>
                         </form>
+                        <%-- Guarda solo las marcaciones válidas --%>
                         <form id="frmGuardar" action="${pageContext.request.contextPath}/ImportarServlet?accion=guardar" method="post"
                               data-validos="<%= resultado.getGuardables().size() %>"
                               data-incidencias="<%= resultado.hayIncidencias() ? 1 : 0 %>">
@@ -165,6 +168,7 @@
     </div>
 
     <% if (resultado != null) { %>
+    <%-- Diálogos con el detalle de cada grupo del resumen --%>
     <dialog id="dlgCorrectos" class="dialog-ancho">
         <div class="modal-head">
             <h3>Registros correctos (<%= resultado.getCorrectos().size() %>)</h3>

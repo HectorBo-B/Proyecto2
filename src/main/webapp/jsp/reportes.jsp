@@ -1,11 +1,13 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.text.Normalizer, java.util.List, model.empleado, model.resultadoImportacion" %>
 <%!
+    //Quita las tildes para buscar sin importar los acentos
     private static String sinTildes(String texto)
     {
         return Normalizer.normalize(texto, Normalizer.Form.NFD).replaceAll("\\p{M}", "");
     }
 %>
+<%-- Datos del servlet y mensajes de sesión (se muestran una sola vez) --%>
 <%
     @SuppressWarnings("unchecked")
     List<empleado> empleados = (List<empleado>) request.getAttribute("empleados");
@@ -37,6 +39,7 @@
     <script src="${pageContext.request.contextPath}/js/funciones.js" defer></script>
     <script src="${pageContext.request.contextPath}/js/validaciones.js" defer></script>
     <style>
+        /* Estilos propios de esta página */
         .col-check
         {
             width: 42px;
@@ -175,6 +178,7 @@
                 <% } %>
 
                 <div class="card">
+                    <%-- Buscador de empleados y rango de fechas --%>
                     <form id="frmBuscar" action="${pageContext.request.contextPath}/reporteServlet" method="get" class="toolbar" autocomplete="off">
                         <div class="field">
                             <label for="q">Buscar</label>
@@ -205,6 +209,7 @@
                     </div>
 
                     <div class="table-wrap">
+                        <%-- Lista de empleados: desde aquí se abre el reporte --%>
                         <table class="table" id="tblReportes">
                             <thead>
                                 <tr>
@@ -255,6 +260,7 @@
         </button>
     </div>
 
+    <%-- Diálogo para agregar o quitar observaciones en los días elegidos --%>
     <dialog id="dlgObservacion">
         <form id="frmObservacion" action="${pageContext.request.contextPath}/reporteServlet" method="post" autocomplete="off">
             <div class="modal-head">
@@ -329,6 +335,7 @@
     </dialog>
 
     <script>
+        //Enter no envía el buscador
         document.getElementById('frmBuscar').addEventListener('keydown', function (evento)
         {
             if (evento.key === 'Enter' && evento.target.tagName === 'INPUT')
@@ -367,6 +374,7 @@
     <script>
         (function ()
         {
+            //mismo límite de días que el servidor
             var MAXIMO_DIAS = 366;
             var DIAS = ['Dom.', 'Lun.', 'Mar.', 'Mie.', 'Jue.', 'Vie.', 'Sáb.'];
             var tabla = document.getElementById('tblReportes');

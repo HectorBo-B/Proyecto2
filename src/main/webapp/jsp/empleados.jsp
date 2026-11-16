@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List, model.empleado, model.empleado.codigoMarcacion, model.resultadoImportacion" %>
+<%-- Datos que envía empServlet (empleados y códigos de marcación) --%>
 <%
     @SuppressWarnings("unchecked")
     List<empleado> empleados = (List<empleado>) request.getAttribute("empleados");
@@ -103,6 +104,7 @@
                     </div>
 
                     <div class="table-wrap">
+                        <%-- Tabla de empleados --%>
                         <table class="table" id="tblPersonal"
                                data-crud="dlgPersonal" data-titulo-editar="Modificar empleado" data-etiqueta="nombre apellido"
                                data-servidor="${pageContext.request.contextPath}/empServlet"
@@ -149,6 +151,7 @@
         <% } } %>
     </div>
 
+    <%-- Formulario para crear y editar empleados --%>
     <dialog id="dlgPersonal">
         <form action="${pageContext.request.contextPath}/empServlet" method="post" autocomplete="off">
             <div class="modal-head">

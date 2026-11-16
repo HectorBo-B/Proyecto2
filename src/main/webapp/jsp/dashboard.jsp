@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="model.dashboard, model.resultadoImportacion" %>
+<%-- Si se abre sin pasar por dashboardServlet, redirige para cargar los datos --%>
 <%
     dashboard resumen = (dashboard) request.getAttribute("resumen");
 
@@ -47,6 +48,7 @@
                 </div>
                 <% } %>
 
+                <%-- Tarjetas con los totales --%>
                 <div class="stats">
                     <div class="stat">
                         <div class="stat-icon teal"><i class="fa-solid fa-users"></i></div>
@@ -93,6 +95,7 @@
                     </div>
                 </div>
 
+                <%-- Tabla de últimas marcaciones --%>
                 <div class="card">
                     <h3>Turnos</h3>
                     <div class="shifts">

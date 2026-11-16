@@ -87,6 +87,7 @@
                 </div>
                 <% } %>
 
+                <%-- Pestañas: usuarios y auditoría --%>
                 <div class="tabs">
                     <button type="button" class="active" data-grupo="seg" data-panel="panelUsuarios">Usuarios</button>
                     <button type="button" data-grupo="seg" data-panel="panelAuditoria">Auditoría</button>
@@ -129,6 +130,7 @@
                         </div>
 
                         <div class="table-wrap">
+                            <%-- Tabla de usuarios --%>
                             <table class="table" id="tblUsuarios"
                                    data-crud="dlgUsuario" data-titulo-editar="Modificar usuario" data-etiqueta="usuario"
                                    data-servidor="${pageContext.request.contextPath}/usuarioServlet"
@@ -168,6 +170,7 @@
                     </div>
                 </section>
 
+                <%-- Historial de auditoría --%>
                 <section id="panelAuditoria" data-grupo="seg" hidden>
                     <div class="card">
                         <div class="card-head">
@@ -223,6 +226,7 @@
         </div>
     </div>
 
+    <%-- Formulario para crear y editar usuarios --%>
     <dialog id="dlgUsuario">
         <form action="${pageContext.request.contextPath}/usuarioServlet" method="post" autocomplete="off">
             <div class="modal-head">

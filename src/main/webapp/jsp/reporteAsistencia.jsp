@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.Collections, java.util.List, model.empleado, model.reporteAsistencia, model.resultadoImportacion" %>
+<%-- Hoja de asistencia de un empleado o de todos, lista para imprimir --%>
 <%
     @SuppressWarnings("unchecked")
     List<reporteAsistencia> hojas = (List<reporteAsistencia>) request.getAttribute("reportes");
@@ -33,6 +34,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="${pageContext.request.contextPath}/js/funciones.js" defer></script>
     <style>
+        /* Estilos propios de la hoja y de la impresión */
         body.vista-reporte
         {
             background: #e5e7eb;
@@ -232,6 +234,7 @@
             <p>Código de Marcación: <%= emp.getCodM() %></p>
         </div>
 
+        <%-- Una fila por día del rango --%>
         <table class="tbl-asistencia">
             <colgroup>
                 <col style="width: 92px">
@@ -281,6 +284,7 @@
     <script>
         (function ()
         {
+            //al elegir un empleado se desplaza hasta su hoja
             var lista = document.getElementById('irEmpleado');
 
             if (!lista)
