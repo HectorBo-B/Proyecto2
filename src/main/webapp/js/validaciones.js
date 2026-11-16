@@ -4,7 +4,7 @@
 
     var RE_NOMBRE = /^\p{L}+$/u;
     var RE_APELLIDO = /^\p{L}+( \p{L}+)*$/u;
-    var RE_CEDULA = /^[0-9]+(-[0-9]+){0,2}$/;
+    var RE_CEDULA = /^([A-Z0-9]{2})-([0-9]{4})-([0-9]{5})$/;
     var RE_USUARIO = /^[A-Za-z0-9._-]+$/;
     var RE_CORREO = /^[A-Za-z0-9]+@[A-Za-z0-9]+\.[A-Za-z]{2,}$/;
 
@@ -46,9 +46,26 @@
         return capitalizar(valor.replace(/\s+/g, ' ').replace(/[^\p{L} ]/gu, '').replace(/ {2,}/g, ' ').replace(/^ /, ''));
     }
 
-    function limpiarCedula(valor)
+    //Formato XX-0000-00000: el guion se agrega solo al completar cada grupo (no se vuelve a poner al borrar)
+    function limpiarCedula(valor, insertando)
     {
-        return limitarGuiones(valor.replace(/[^0-9-]/g, '').replace(/-{2,}/g, '-').replace(/^-/, ''), 3);
+        var crudo = valor.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        var inicio = crudo.slice(0, 2);
+        var resto = crudo.slice(2).replace(/[^0-9]/g, '');
+        var tomo = resto.slice(0, 4);
+        var asiento = resto.slice(4, 9);
+        var termina = insertando === true || /-$/.test(valor);
+        var texto = inicio;
+
+        if (inicio.length === 2 && (tomo !== '' || termina))
+        {
+            texto += '-' + tomo;
+        }
+        if (tomo.length === 4 && (asiento !== '' || termina))
+        {
+            texto += '-' + asiento;
+        }
+        return texto;
     }
 
     function limpiarUsuario(valor)
@@ -127,11 +144,17 @@
             limpiar: limpiarCedula,
             validar: function (v)
             {
-                if (v.length > 13)
+                var partes = RE_CEDULA.exec(v.toUpperCase());
+
+                if (!partes)
                 {
-                    return 'La cédula no puede superar 13 caracteres.';
+                    return 'Formato de cédula: 2 números o letras, guion, 4 números, guion y 5 números (ej. 08-0123-00456).';
                 }
-                return RE_CEDULA.test(v) ? '' : 'La cédula solo admite números y hasta 3 guiones (ej. 8-888-8888).';
+                if (partes[2] === '0000')
+                {
+                    return 'El tomo (4 números) no puede ser 0000.';
+                }
+                return partes[3] === '00000' ? 'El asiento (5 números) no puede ser 00000.' : '';
             }
         },
         usuario: {
@@ -165,6 +188,19 @@
             {
                 return v.length < 8 || v.length > 30 ? 'La contraseña debe tener entre 8 y 30 caracteres.' : '';
             }
+        },
+        fecha: {
+            vacio: 'Seleccione la fecha.',
+            validar: function (v, campo)
+            {
+                var maximo = campo.getAttribute('data-max');
+
+                if (maximo && v > maximo)
+                {
+                    return 'No se puede consultar una fecha posterior a hoy (' + maximo.split('-').reverse().join('-') + ').';
+                }
+                return '';
+            }
         }
     };
 
@@ -193,9 +229,9 @@
         }
         if (valor === '')
         {
-            return campo.required ? 'Este campo es obligatorio.' : '';
+            return campo.required ? (regla.vacio || 'Este campo es obligatorio.') : '';
         }
-        return regla.validar(regla.exacto ? valor : valor.trim());
+        return regla.validar(regla.exacto ? valor : valor.trim(), campo);
     }
 
     function cajaError(campo)
@@ -231,10 +267,10 @@
     }
 
     /* Aplica la limpieza sin mover el cursor de lugar */
-    function aplicar(campo, limpiar)
+    function aplicar(campo, limpiar, insertando)
     {
         var original = campo.value;
-        var nuevo = limpiar(original);
+        var nuevo = limpiar(original, insertando);
         var cursor = null;
         var posicion;
 
@@ -255,7 +291,7 @@
 
         if (cursor !== null)
         {
-            posicion = Math.min(limpiar(original.slice(0, cursor)).length, nuevo.length);
+            posicion = Math.min(limpiar(original.slice(0, cursor), insertando).length, nuevo.length);
             try
             {
                 campo.setSelectionRange(posicion, posicion);
@@ -308,7 +344,8 @@
         }
         if (regla.limpiar)
         {
-            aplicar(campo, regla.limpiar);
+            //al borrar no se vuelven a poner los guiones automáticos
+            aplicar(campo, regla.limpiar, !evento.inputType || evento.inputType.indexOf('insert') === 0);
         }
         if (!esBusqueda(campo))
         {
@@ -388,13 +425,13 @@
 
     window.validaciones = {
         capitalizar: capitalizar,
-        limpiar: function (tipo, valor)
+        limpiar: function (tipo, valor, insertando)
         {
-            return REGLAS[tipo] && REGLAS[tipo].limpiar ? REGLAS[tipo].limpiar(valor) : valor;
+            return REGLAS[tipo] && REGLAS[tipo].limpiar ? REGLAS[tipo].limpiar(valor, insertando === true) : valor;
         },
-        validar: function (tipo, valor)
+        validar: function (tipo, valor, campo)
         {
-            return REGLAS[tipo] && REGLAS[tipo].validar ? REGLAS[tipo].validar(valor) : '';
+            return REGLAS[tipo] && REGLAS[tipo].validar ? REGLAS[tipo].validar(valor, campo) : '';
         }
     };
 })();

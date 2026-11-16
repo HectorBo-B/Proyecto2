@@ -173,7 +173,7 @@
                     </div>
                     <div class="field">
                         <label class="required" for="cedula">Cédula</label>
-                        <input type="text" id="cedula" name="cedula" class="input" placeholder="00-0000-000" maxlength="13" data-val="cedula" required>
+                        <input type="text" id="cedula" name="cedula" class="input" placeholder="00-0000-00000" maxlength="13" data-val="cedula" required>
                     </div>
                     <div class="field">
                         <label class="required" for="turno">Turno</label>

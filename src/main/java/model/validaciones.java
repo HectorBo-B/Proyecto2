@@ -8,7 +8,7 @@ public final class validaciones
 {
     private static final Pattern NOMBRE = Pattern.compile("\\p{L}+");
     private static final Pattern APELLIDO = Pattern.compile("\\p{L}+( \\p{L}+)*");
-    private static final Pattern CEDULA = Pattern.compile("[0-9]+(-[0-9]+){0,3}");
+    private static final Pattern CEDULA = Pattern.compile("[A-Z0-9]{2}-[0-9]{4}-[0-9]{5}");
     private static final Pattern USUARIO = Pattern.compile("[A-Za-z0-9._-]+");
     private static final Pattern CORREO = Pattern.compile("[A-Za-z0-9]+@[A-Za-z0-9]+\\.[A-Za-z]{2,}");
 
@@ -63,15 +63,23 @@ public final class validaciones
 
     public static String cedula(String valor)
     {
-        String texto = limpio(valor);
+        String texto = limpio(valor).toUpperCase(Locale.ROOT);
 
         if (texto.isEmpty())
         {
             throw new IllegalArgumentException("La cédula es obligatoria.");
         }
-        if (texto.length() > 13 || !CEDULA.matcher(texto).matches())
+        if (!CEDULA.matcher(texto).matches())
         {
-            throw new IllegalArgumentException("La cédula solo admite números y hasta 3 guiones (máximo 13 caracteres).");
+            throw new IllegalArgumentException("La cédula debe tener 2 números o letras, guion, 4 números, guion y 5 números (ej. 08-0123-00456).");
+        }
+        if (texto.substring(3, 7).equals("0000"))
+        {
+            throw new IllegalArgumentException("El tomo de la cédula no puede ser 0000.");
+        }
+        if (texto.substring(8).equals("00000"))
+        {
+            throw new IllegalArgumentException("El asiento de la cédula no puede ser 00000.");
         }
         return texto;
     }

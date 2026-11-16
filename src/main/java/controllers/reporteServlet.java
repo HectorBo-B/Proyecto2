@@ -196,6 +196,10 @@ public class reporteServlet extends HttpServlet
         {
             throw new IllegalArgumentException("La fecha final no puede ser anterior a la inicial.");
         }
+        if (hasta.isAfter(LocalDate.now()))
+        {
+            throw new IllegalArgumentException("No se puede consultar el registro de asistencia de fechas posteriores a hoy.");
+        }
         if (ChronoUnit.DAYS.between(desde, hasta) >= MAXIMO_DIAS)
         {
             throw new IllegalArgumentException("El rango no puede superar " + MAXIMO_DIAS + " días.");

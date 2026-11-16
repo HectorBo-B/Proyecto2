@@ -19,6 +19,7 @@
     String texto = (String) request.getAttribute("q");
     String desde = (String) request.getAttribute("desde");
     String hasta = (String) request.getAttribute("hasta");
+    String hoy = java.time.LocalDate.now().toString();
     String error = (String) request.getAttribute("error");
     String mensajeOk = (String) session.getAttribute("mensajeReporteOk");
     String mensajeError = (String) session.getAttribute("mensajeReporteError");
@@ -181,11 +182,11 @@
                         </div>
                         <div class="field">
                             <label for="desde">Desde</label>
-                            <input type="<%= desde.isEmpty() ? "text" : "date" %>" id="desde" name="desde" class="input" value="<%= desde %>" placeholder="Seleccione la fecha" data-fecha required>
+                            <input type="<%= desde.isEmpty() ? "text" : "date" %>" id="desde" name="desde" class="input" value="<%= desde %>" placeholder="Seleccione la fecha" max="<%= hoy %>" data-max="<%= hoy %>" data-val="fecha" data-fecha required>
                         </div>
                         <div class="field">
                             <label for="hasta">Hasta</label>
-                            <input type="<%= hasta.isEmpty() ? "text" : "date" %>" id="hasta" name="hasta" class="input" value="<%= hasta %>" placeholder="Seleccione la fecha" data-fecha required>
+                            <input type="<%= hasta.isEmpty() ? "text" : "date" %>" id="hasta" name="hasta" class="input" value="<%= hasta %>" placeholder="Seleccione la fecha" max="<%= hoy %>" data-max="<%= hoy %>" data-val="fecha" data-fecha required>
                         </div>
                         <button type="button" class="btn btn-secondary" data-limpiar="tblReportes">
                             <i class="fa-solid fa-rotate"></i> Limpiar
@@ -359,14 +360,6 @@
                 {
                     campo.type = 'text';
                 }
-            });
-            campo.addEventListener('invalid', function ()
-            {
-                campo.setCustomValidity('Seleccione la fecha');
-            });
-            campo.addEventListener('input', function ()
-            {
-                campo.setCustomValidity('');
             });
         });
     </script>

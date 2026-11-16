@@ -15,6 +15,7 @@ import java.util.TreeMap;
 
 import config.Conexion;
 import model.empleado;
+import model.feriados;
 import model.reporteAsistencia;
 
 public class reporteDAO
@@ -162,7 +163,43 @@ public class reporteDAO
         return notas;
     }
 
+    //Feriados nacionales (calculados) más los días libres adicionales que estén en la tabla dias_libres
+    private Map<LocalDate, String> diasLibres(LocalDate desde, LocalDate hasta) throws SQLException
+    {
+        Map<LocalDate, String> libres = new TreeMap<>(feriados.entre(desde, hasta));
+        String sql = "SELECT FECHA FROM dias_libres WHERE FECHA BETWEEN ? AND ?";
+
+        try (Connection con = Conexion.getConexion();
+             PreparedStatement ps = con.prepareStatement(sql))
+        {
+            ps.setDate(1, Date.valueOf(desde));
+            ps.setDate(2, Date.valueOf(hasta));
+
+            try (ResultSet rs = ps.executeQuery())
+            {
+                while (rs.next())
+                {
+                    libres.put(rs.getDate("FECHA").toLocalDate(), "Día libre");
+                }
+            }
+        }
+        catch (SQLException e)
+        {
+            //si todavía no se creó la tabla dias_libres, solo se usan los feriados nacionales
+            if (!"42S02".equals(e.getSQLState()))
+            {
+                throw e;
+            }
+        }
+        return libres;
+    }
+
     public reporteAsistencia generar(empleado emp, LocalDate desde, LocalDate hasta) throws SQLException
+    {
+        return generar(emp, desde, hasta, diasLibres(desde, hasta));
+    }
+
+    public reporteAsistencia generar(empleado emp, LocalDate desde, LocalDate hasta, Map<LocalDate, String> libres) throws SQLException
     {
         LocalTime[] horario = horario(emp.getTurno());
         Map<LocalDate, List<LocalTime>> marcas = marcaciones(emp.getCodM(), desde, hasta);
@@ -196,13 +233,21 @@ public class reporteDAO
 
             registro.setObservacion(notas.get(fecha));
 
-            if (!registro.isFinDeSemana())
+            boolean libre = libres.containsKey(fecha);
+
+            //un día feriado muestra su nombre, salvo que ya tenga una observación escrita a mano
+            if (libre && registro.getObservacion().isEmpty())
             {
-                //solo es ausencia si no marco nada: con entrada o salida (aunque falte la otra) cuenta como presente
-                boolean sinMarcas = registro.getEntrada() == null && registro.getSalida() == null;
+                registro.setObservacion(libres.get(fecha));
+            }
+
+            //fines de semana y feriados no cuentan como ausencia ni como tardanza
+            if (!registro.isFinDeSemana() && !libre)
+            {
+                boolean incompleto = registro.getEntrada() == null || registro.getSalida() == null;
                 boolean conObservacion = !registro.getObservacion().isEmpty();
 
-                if (sinMarcas && fecha.isBefore(hoy) && !conObservacion)
+                if (incompleto && fecha.isBefore(hoy) && !conObservacion)
                 {
                     registro.setAusente(true);
                 }
@@ -220,10 +265,11 @@ public class reporteDAO
     public List<reporteAsistencia> generarTodos(LocalDate desde, LocalDate hasta) throws SQLException
     {
         List<reporteAsistencia> reportes = new ArrayList<>();
+        Map<LocalDate, String> libres = diasLibres(desde, hasta);
 
         for (empleado emp : buscar(""))
         {
-            reportes.add(generar(emp, desde, hasta));
+            reportes.add(generar(emp, desde, hasta, libres));
         }
         return reportes;
     }
