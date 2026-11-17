@@ -139,21 +139,6 @@ public class empleadoServlet extends HttpServlet {
 		dao.crear(emp);
 		return "Empleado registrado correctamente. Código de marcación: " + codigo + ".";
 	}
-
-	//Texto obligatorio con largo maximo
-	private String texto(String valor, int maximo, String campo) {
-
-		String limpio = valor == null ? "" : valor.trim();
-
-		if (limpio.isEmpty()) {
-			throw new IllegalArgumentException(campo + " es obligatorio.");
-		}
-		if (limpio.length() > maximo) {
-			throw new IllegalArgumentException(campo + " no puede superar " + maximo + " caracteres.");
-		}
-		return limpio;
-	}
-
 	//Convierte a entero o lanza el mensaje de error indicado
 	private int numero(String valor, String mensaje) {
 
