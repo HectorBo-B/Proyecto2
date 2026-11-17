@@ -149,13 +149,13 @@
 
                 if (!partes)
                 {
-                    return 'Formato de cédula: 2 números o letras, guion, 4 números, guion y 5 números (ej. 08-0123-00456).';
+                    return 'Formato de cédula: 08-0123-00456.';
                 }
                 if (partes[2] === '0000')
                 {
-                    return 'El tomo (4 números) no puede ser 0000.';
+                    return 'El tomo no puede ser 0000.';
                 }
-                return partes[3] === '00000' ? 'El asiento (5 números) no puede ser 00000.' : '';
+                return partes[3] === '00000' ? 'El asiento no puede ser 00000.' : '';
             }
         },
         usuario: {
@@ -179,7 +179,7 @@
                 {
                     return 'El correo no puede superar 30 caracteres.';
                 }
-                return RE_CORREO.test(v) ? '' : 'Escriba un correo válido (ej. nombre@dominio.com): solo letras y números, un solo @ y un solo punto.';
+                return RE_CORREO.test(v) ? '' : 'Escriba un correo válido ej. nombre@dominio.com';
             }
         },
         clave: {
